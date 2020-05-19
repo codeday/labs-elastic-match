@@ -2,7 +2,7 @@ def point_to_timeone(point) -> int:  # point: GeoPoint https://tinyurl.com/pkqn4
     pass
 
 
-def location_text_to_geopoint(place: str):  # -> GeoPoint https://tinyurl.com/pkqn4be
+def location_text_to_geopoint(place: str):  # -> GeoPoint https://tinyurl.com/pkqn4be | None
     pass
 
 

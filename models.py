@@ -46,7 +46,7 @@ class Mentor(Document):
     can_commit = Boolean()
     company_hour_matching = Boolean()
 
-    # These two should be yes
+    # These two should be True
     signature_captured = Boolean()
     entry_reviewed = Boolean()
 
