@@ -21,15 +21,15 @@ class Mentor(Document):
     past_mentoring = Keyword(multi=True)  # This should be a list, so be sure to assign values to it as a list
     linkedin = Keyword(required=True)
     company = Keyword()
-    where_work_text = Keyword()
-    where_work_point = GeoPoint()
+    location_keyword = Keyword()  # The location that they said they worked
+    location_geo = GeoPoint()
     role = Keyword()
     industry = Keyword()
-    mentor_experience = Integer()
+    experience = Integer()
     grow_up_text = Keyword()
-    grow_up_number = Short()  # Census num for region the person grew up in. 1-3 is urban, 4-6 is suburbs, 7-9 is rural
+    grow_up_number = Short()  # Census num for region the person grew up in. 1-3 is urban, 4-6 is suburbs, 7-9 is rural. -1 on error, 0 outside US
 
-    # Next section will define weights if possible
+    # Next section will define weights if possible, all 0-2
     student_specific_tool_experience = Short()  # How important already knowing tools is
     student_specific_tool_desire = Short()  # How important willingness to learn specific tools is 
     student_similar_upbringing = Short()  # How important a similar upbringing is - census number, others
@@ -53,10 +53,17 @@ class Mentor(Document):
     # Nested project document, up to two should exist
     projects = Nested(Project)
 
-    def add_project(self, proposal: str, tags: list):
+    def add_project(self, proposal: str, tags: list, num_students: int = 0):
         self.projects.append(
-            Project(project_proposal=proposal, project_tags=tags)
+            Project(project_proposal=proposal, project_tags=tags, num_students_confirmed=num_students)
         )
+
+    class Index:
+        name = 'mentors_index'
+        settings = {
+            "number_of_shards": 1,
+            "number_of_replicas": 0,
+        }
 
 
 if __name__ == '__main__':
@@ -64,8 +71,12 @@ if __name__ == '__main__':
 
     connections.create_connection(hosts=['10.0.3.33:9200'], timeout=20)
 
-    mentors = Index("mentors")
+    index_template = Mentor._index.as_template('base')
+    index_template.save()
 
-    mentors.document(Mentor)
-
-    mentors.create()
+    # mentors = Index("mentors")
+    #
+    # mentors.document(Mentor)
+    #
+    # mentors.create()
+    # mentors.save()
