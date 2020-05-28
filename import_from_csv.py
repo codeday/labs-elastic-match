@@ -105,7 +105,9 @@ def parse_number(text):
 conn = connections.create_connection(hosts=['10.0.3.33:9200'], timeout=20)
 
 with open("./data/CodeLabs_Mentor_Application.csv", mode="r") as mentor_csv_file:
+    mentor_csv_file_2 = open("./data/CodeLabs_Mentor_Application.xlsx - YourEducation.csv")
     mentor_dict = DictReader(mentor_csv_file)
+    mentor_dict_2 = DictReader(mentor_csv_file_2)
 
     num_added_successfully = 0
     total_loops = 0

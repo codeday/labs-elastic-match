@@ -9,7 +9,7 @@ conn = connections.create_connection(hosts=['10.0.3.33:9200'], timeout=20)
 mentor = Mentor(
     email="johnpeter@srnd.org",
     phone="(111) 111-1111",
-    timezone=-8,  # America pacific is UTC-8
+    timezone=zip_to_timeone(92078),
     two_projects=True,
     is_recruited_mentor=True,
     why_mentor="I like to mentor junior people and share what I've learned with them",
@@ -23,7 +23,7 @@ mentor = Mentor(
     industry="Computers",
     experience=5,
     grow_up_text="In the Interwebs",
-    grow_up_number=1,
+    # grow_up_number=1,
 
     # Next section will define weights if possible
     student_specific_tool_experience=2,
