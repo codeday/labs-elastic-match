@@ -118,8 +118,8 @@ def parse_number(text):
 
 conn = connections.create_connection(hosts=['10.0.3.33:9200'], timeout=20)
 
-with open("./data/CodeLabs_Mentor_Application (1).xlsx - CodeLabsMentorApplication.csv", mode="r") as mentor_csv_file:
-    mentor_csv_file_2 = open("./data/CodeLabs_Mentor_Application (1).xlsx - YourEducation.csv")
+with open("older_schema/data/CodeLabs_Mentor_Application (1).xlsx - CodeLabsMentorApplication.csv", mode="r") as mentor_csv_file:
+    mentor_csv_file_2 = open("older_schema/data/CodeLabs_Mentor_Application (1).xlsx - YourEducation.csv")
     mentor_dict = DictReader(mentor_csv_file)
     mentor_dict_reader_2 = DictReader(mentor_csv_file_2)
     mentor_dict_2 = [i for i in mentor_dict_reader_2]
