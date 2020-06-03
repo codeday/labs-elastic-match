@@ -8,12 +8,26 @@ from csv import DictReader
 import re
 
 
-def fix_bool(dictionary) -> dict:
+def fix_main_dict(dictionary) -> dict:
+    """
+    Fixes issues with strings of floats that cannot be directly cast to an int, and with bad booleans
+
+    """
     for k, v in dictionary.items():
         if v == "Yes":
             dictionary[k] = True
         if v == "No":
             dictionary[k] = False
+        if v == "1.0" or v == "2.0" or v == "3.0" or v == "0.00":
+            dictionary[k] = int(float(v))
+    return dictionary
+
+
+def fix_education_dict(dictionary) -> dict:
+    for k, v in dictionary.items():
+        # If a year is givin in the format yyyy-yyyy, need to parse to work with elastic
+        if re.match(r"[0-9]{4}-[0-9]{4}", v):
+            dictionary[k] = v.split("-")[1]
     return dictionary
 
 
@@ -104,17 +118,19 @@ def parse_number(text):
 
 conn = connections.create_connection(hosts=['10.0.3.33:9200'], timeout=20)
 
-with open("./data/CodeLabs_Mentor_Application.csv", mode="r") as mentor_csv_file:
-    mentor_csv_file_2 = open("./data/CodeLabs_Mentor_Application.xlsx - YourEducation.csv")
+with open("./data/CodeLabs_Mentor_Application (1).xlsx - CodeLabsMentorApplication.csv", mode="r") as mentor_csv_file:
+    mentor_csv_file_2 = open("./data/CodeLabs_Mentor_Application (1).xlsx - YourEducation.csv")
     mentor_dict = DictReader(mentor_csv_file)
-    mentor_dict_2 = DictReader(mentor_csv_file_2)
+    mentor_dict_reader_2 = DictReader(mentor_csv_file_2)
+    mentor_dict_2 = [i for i in mentor_dict_reader_2]
+
 
     num_added_successfully = 0
     total_loops = 0
 
     for mentor_data in mentor_dict:
         total_loops += 1
-        mentor_data = fix_bool(mentor_data)
+        mentor_data = fix_main_dict(mentor_data)
 
         error_str = validate_entry(mentor_data)
         if error_str != "0":
@@ -125,9 +141,10 @@ with open("./data/CodeLabs_Mentor_Application.csv", mode="r") as mentor_csv_file
             continue
 
         mentor_elastic = Mentor(
+            id=mentor_data["CodeLabsMentorApplication_Id"],
             email=mentor_data['Email'],
             phone=mentor_data['Phone'],
-            timezone=-8,  # America pacific is UTC-8
+            timezone=parse_tz(mentor_data['Choice3']),  # America pacific is UTC-8
             two_projects=mentor_data[
                 'ByDefaultWeWillPickONEProjectProposalbasedOnStudentInterestIfYouWouldLikeToHostStudentGroupsForBOTHProjectsCheckThisBox'],
             is_recruited_mentor=mentor_data['IsRecruitedMentor'],
@@ -136,15 +153,16 @@ with open("./data/CodeLabs_Mentor_Application.csv", mode="r") as mentor_csv_file
             linkedin=mentor_data['LinkedInProfile'],
             company=mentor_data['Section_WhichCompanyDoYouWorkFor'],
             location_keyword=mentor_data['Section_WhereDoYouWork'],
-            location_geo=location_text_to_geopoint('Section_WhereDoYouWork'),
+            # location_geo=location_text_to_geopoint('Section_WhereDoYouWork'),
             role=mentor_data['Section_WhatsYourRoleAtWork'],
             industry=mentor_data['Section_WhatTypeOfIndustryDoYouWorkIn'],
             experience=parse_number(mentor_data['Section_HowManyYearsOfExperienceDoYouHave']),
             grow_up_text=mentor_data['WhereDidYouGrowUp'],
-            grow_up_number=point_to_urbanity(location_text_to_geopoint(mentor_data['WhereDidYouGrowUp'])),
+            # grow_up_number=point_to_urbanity(location_text_to_geopoint(mentor_data['WhereDidYouGrowUp'])),
 
             # Next section will define weights if possible
-            student_specific_tool_experience=mentor_data['RatingScale_PreexistingExperienceWithTheToolsframeworkslanguagesIUse_Rating'],
+            student_specific_tool_experience=mentor_data[
+                'RatingScale_PreexistingExperienceWithTheToolsframeworkslanguagesIUse_Rating'],
             student_specific_tool_desire=mentor_data['RatingScale_DesireToLearnTheToolsframeworkslanguagesIUse_Rating'],
             student_similar_upbringing=mentor_data['RatingScale_SimilarUpbringingToMe_Rating'],
             student_similar_background=mentor_data['RatingScale_SimilarBackgroundToMe_Rating'],
@@ -178,6 +196,12 @@ with open("./data/CodeLabs_Mentor_Application.csv", mode="r") as mentor_csv_file
                 tags=listify(mentor_data['TagThisProject2']),
             )
 
+        educations = []
+        for i in mentor_dict_2:
+            if i['CodeLabsMentorApplication_Id'] == mentor_data['CodeLabsMentorApplication_Id']:
+                i = fix_education_dict(i)
+                mentor_elastic.add_education(i['Type'], i['Year'], i['Institution'], i['MajorMinor'])
+
         mentor_elastic.save()
         num_added_successfully += 1
-        print(f"Another one down! So far, {num_added_successfully} out of {total_loops} have succeeded.")
+        # print(f"Another one down! So far, {num_added_successfully} out of {total_loops} have succeeded.")

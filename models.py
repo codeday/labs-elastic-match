@@ -3,6 +3,7 @@ from elasticsearch_dsl import Document, Text, GeoPoint, Date, Integer, Keyword, 
 
 
 class Project(InnerDoc):
+    project_id = Keyword(required=True)
     project_proposal = Text(required=True)  # This should be a searchable corpus of text, so Text it is
     project_tags = Keyword(multi=True,
                            required=True)  # This should be a list, so be sure to assign values to it as a list
@@ -18,6 +19,7 @@ class Education(InnerDoc):
 
 
 class Mentor(Document):
+    id = Keyword(required=True)
     email = Keyword(required=True)  # Keyword should be used since this is not a body of text
     phone = Keyword(
         required=True)  # Keyword should be used since this is not a body of text, seems better than number types
@@ -34,7 +36,7 @@ class Mentor(Document):
     industry = Keyword()
     experience = Integer()
     grow_up_text = Keyword()
-    #grow_up_number = Short()  # Census num for region the person grew up in. 1-3 is urban, 4-6 is suburbs, 7-9 is rural. -1 on error, 0 outside US
+    # grow_up_number = Short()  # Census num for region the person grew up in. 1-3 is urban, 4-6 is suburbs, 7-9 is rural. -1 on error, 0 outside US
 
     # Next section will define weights if possible, all 0-2
     student_specific_tool_experience = Short()  # How important already knowing tools is

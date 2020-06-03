@@ -1,11 +1,29 @@
 import pytz, datetime
 from pyzipcode import ZipCodeDatabase
+from typing import Optional
 
 
 def zip_to_timeone(zipcode) -> int:  # zipcode: zipcode
     zcdb = ZipCodeDatabase()
     tz = zcdb[92078].timezone
     return tz
+
+
+def parse_tz(tz_str: str) -> Optional[int]:
+    if tz_str == 'America - Eastern':
+        return -5
+    if tz_str == 'America - Pacific':
+        return -8
+    if tz_str == 'America - Mountain':
+        return -7
+    if tz_str == 'America - Central':
+        return -8
+    if tz_str == 'America - Hawaii':
+        return -10
+    if tz_str == 'America - Atlantic':
+        return -3
+    else:
+        return None
 
 
 def location_text_to_geopoint(place: str):  # -> GeoPoint https://tinyurl.com/pkqn4be | None
