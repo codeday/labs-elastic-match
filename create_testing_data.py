@@ -7,12 +7,6 @@ from faker import Faker
 fake = Faker()
 conn = connections.create_connection(hosts=["10.0.3.33:9200"], timeout=20)
 
-Bool(should=[FunctionScore(query=Fuzzy(company='Davis, Sosa and Wall'), score_mode='multiply', weight='10'), 
-             FunctionScore(query=Fuzzy(company='Baker, Fowler and Shaw'), score_mode='multiply', weight='10'), 
-             FunctionScore(query=Fuzzy(company='Flores-Schwartz'), score_mode='multiply', weight='10'), 
-             FunctionScore(query=Fuzzy(company='Hanson-Waller'), score_mode='multiply', weight='10')]
-             )
-
 
 for i in range(40):
     mentor = MentorProject(
@@ -29,6 +23,8 @@ for i in range(40):
         proj_description=fake.bs(),
         proj_tags=fake.words(),
         studentsSelected=0,
+        okTimezoneDifference=fake.pybool(),
+        isBeginner=False,
     )
 
     mentor.save()

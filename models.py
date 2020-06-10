@@ -6,7 +6,8 @@ from elasticsearch_dsl import (
     Short,
     InnerDoc,
     Nested,
-    Join
+    Join,
+    Integer
 )
 
 
@@ -19,7 +20,8 @@ class MentorProject(Document):
     preferStudentUnderRep = Short(required=True)  # (0-2)
     preferToolExistingKnowledge = Boolean(required=True)
     okExtended = Boolean(required=True)
-    timezone = Short(required=True)  # +- UTC
+    okTimezoneDifference = Boolean(required=True)
+    timezone = Integer(required=True)  # +- UTC
     proj_id = Keyword(required=True)
     proj_description = Text(required=True)
     proj_tags = Keyword(multi=True, required=True)
@@ -41,7 +43,7 @@ class StudentSchema(Document):
     rural = Boolean(required=True)
     underrepresented = Boolean(required=True)
     requireExtended = Boolean(required=True)
-    timezone = Short(required=True)
+    timezone = Integer(required=True)
     interestCompanies = Keyword(multi=True, required=True)
     interestTags = Keyword(multi=True, required=True)
 
