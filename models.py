@@ -7,8 +7,14 @@ from elasticsearch_dsl import (
     InnerDoc,
     Nested,
     Join,
-    Integer
+    Integer,
+    Object
 )
+
+
+class StudentVote(InnerDoc):
+    student_id = Keyword(required=True)
+    choice = Integer()
 
 
 class MentorProject(Document):
@@ -25,7 +31,8 @@ class MentorProject(Document):
     proj_id = Keyword(required=True)
     proj_description = Text(required=True)
     proj_tags = Keyword(multi=True, required=True)
-    studentsSelected = Short()
+    numStudentsSelected = Short()
+    listStudentsSelected = Nested(StudentVote)
     isBeginner = Boolean(required=True)
 
     class Index:
@@ -34,6 +41,9 @@ class MentorProject(Document):
             "number_of_shards": 1,
             "number_of_replicas": 0,
         }
+
+    def add_vote(self, student_id, choice):
+        self.listStudentsSelected.append(StudentVote(student_id=student_id, choice=choice))
 
 
 class StudentSchema(Document):

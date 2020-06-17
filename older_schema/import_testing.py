@@ -1,7 +1,7 @@
 # Ensure that skip this and come back is false, for there is a lot of empty fields
 
 from elasticsearch_dsl import connections
-from models import Mentor, Project
+from models import Mentor
 from helpers import *
 
 conn = connections.create_connection(hosts=['10.0.3.33:9200'], timeout=20)

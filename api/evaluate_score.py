@@ -5,11 +5,26 @@ from faker import Faker
 import random
 from elasticsearch_dsl import Q, SF
 from elasticsearch_dsl.query import MatchNone, MatchAll
+# from typing import TypedDict, List
 
-client = Elasticsearch(hosts=["10.0.3.33:9200"])
+# Maybe typedDict isn't actually supported???
+# class Student(TypedDict):
+#     id: str
+#     name: str
+#     rural: bool
+#     underrepresented: bool
+#     requireExtended: bool
+#     timezone: int
+#     interestCompanies: List[str]
+#     interestTags: List[str]
+#     beginner: bool
 
 
-def evaluate_score(student: dict, num_resp: int = 25):
+def evaluate_score(student, client, num_resp: int = 25):
+    """Takes a student, represented as a dictionary and an elasticsearch-py client and returns an elastic response
+
+    See above student class for schema
+    """
     s = elasticsearch_dsl.Search(using=client, index="mentors_index").extra(
         explain=True
     )
