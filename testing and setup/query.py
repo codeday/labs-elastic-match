@@ -2,7 +2,7 @@ import requests
 from jwt import encode
 import uuid, random, json
 
-def get_students():
+def get_matches():
     student = {
         "id": str(uuid.uuid4()),
         "name": "TestTest",

@@ -20,8 +20,8 @@ class StudentVote(InnerDoc):
 class MentorProject(Document):
     id = Keyword(required=True)
     name = Keyword(required=True)
-    company = Text(required=True)
-    bio = Text(required=True)
+    company = Text()
+    bio = Text()
     backgroundRural = Boolean(required=True)
     preferStudentUnderRep = Short(required=True)  # (0-2)
     preferToolExistingKnowledge = Boolean(required=True)
@@ -30,10 +30,10 @@ class MentorProject(Document):
     timezone = Integer(required=True)  # +- UTC
     proj_id = Keyword(required=True)
     proj_description = Text(required=True)
-    proj_tags = Keyword(multi=True, required=True)
+    proj_tags = Keyword(multi=True)
     numStudentsSelected = Short()
     listStudentsSelected = Nested(StudentVote)
-    isBeginner = Boolean(required=True)
+    track = Keyword(required=True)
 
     class Index:
         name = "mentors_index"
