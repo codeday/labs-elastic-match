@@ -1,1 +1,1 @@
-from .get_matches import GetMatches
+from .matches import GetMatches

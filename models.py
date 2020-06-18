@@ -45,6 +45,10 @@ class MentorProject(Document):
     def add_vote(self, student_id, choice):
         self.listStudentsSelected.append(StudentVote(student_id=student_id, choice=choice))
 
+    def save(self, **kwargs):
+        self.numStudentsSelected = 0
+        return super().save(**kwargs)
+
 
 class StudentSchema(Document):
     """Ignored by elastic, is here for my refrence, may be implemented later"""

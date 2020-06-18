@@ -31,4 +31,4 @@ def index():
 
 
 if __name__ == '__main__':
-    app.run(host="localhost", port=9900)
+    app.run(host="localhost", port=9900, debug=True)
