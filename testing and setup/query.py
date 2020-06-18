@@ -28,6 +28,10 @@ def store_student():
         "student_id": "rec03s7tmgmxVlDZu",
         "votes": [
             {"proj_id": "recNRlhAmOOUy32V3", "choice": 1},
+            {"proj_id": "reclyXfRCjMAtSVn0", "choice": 2},
+            {"proj_id": "recaMlxDylhMQKmjx", "choice": 3},
+            {"proj_id": "recFpuV5Ryhi9KfzB", "choice": 4},
+            {"proj_id": "recRJGXhTr9lEq1tO", "choice": 5},
         ]
     }
 

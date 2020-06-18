@@ -1,3 +1,5 @@
+"""Houses the schema for the database and is used to create/update the index"""
+
 from elasticsearch_dsl import (
     Document,
     Text,
@@ -69,10 +71,3 @@ if __name__ == "__main__":
 
     index_template = MentorProject._index.as_template("base")
     index_template.save()
-
-    # mentors = Index("mentors")
-    #
-    # mentors.document(Mentor)
-    #
-    # mentors.create()
-    # mentors.save()

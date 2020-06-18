@@ -26,6 +26,12 @@ class GetMatches(Resource):
                 interestCompanies: List[str]
                 interestTags: List[str]
                 beginner: bool
+
+            Returns a JSON object with the below schema:
+            resp_schema = [
+                {score: 1, project: <project>},
+                ...
+            ]
         """
         args = get_parser.parse_args()
         try:
@@ -51,12 +57,16 @@ class GetMatches(Resource):
                     ...
                 ]
             }
+
+            Returns a JSON response object, containing information about the update which can be checked for various
+            unexpected and uncaught errors.
         """
         args = post_parser.parse_args()
         try:
             data = decode(args.encoded_data, current_app.jwt_key, algorithms=["HS256"])
         except exceptions.DecodeError:
             raise BadRequest("Something is wrong with your JWT Encoding.")
+        resps = []
         for vote in data["votes"]:
             ubq_data = (
                 UpdateByQuery(using=current_app.elasticsearch, index="mentors_index")
@@ -72,10 +82,9 @@ class GetMatches(Resource):
                 )
             )
             try:
-                resp = ubq_data.execute()
+                resps.append(ubq_data.execute().to_dict())
             except RequestError as e:
                 raise BadRequest(
                     "Something went wrong with the update, please try again."
                 )
-            else:
-                return resp
+        return resps

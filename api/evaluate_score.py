@@ -93,6 +93,10 @@ def evaluate_score(student, client, num_resp: int = 25):
         # Adds 0 to query if nothing is found
         prefer_student_underrep = Q("constant_score", filter=MatchNone())
 
+    # Return 1 if track matches and 0 if it does not.
+    # Designed to be combined using an & operator to only allow returns if 
+
+
     # Creates a query adding up all the previous scores,
     # with a requirement that the mentor is available for extended if the student needs it
     if student["requireExtended"]:
@@ -112,6 +116,7 @@ def evaluate_score(student, client, num_resp: int = 25):
                 | background_rural
                 | prefer_student_underrep
         )
+
 
     # Timezone - this one's a bit more complex. See comments in script for more details.
     # Multiplies it's value by the previous scores, allowing it to reduce, set to zero, and increase scores.
