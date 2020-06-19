@@ -94,11 +94,13 @@ def evaluate_score(student, client, num_resp: int = 25):
         prefer_student_underrep = Q("constant_score", filter=MatchNone())
 
     # Return 1 if track matches and 0 if it does not.
-    # Designed to be combined using an & operator to only allow returns if 
-
+    # Designed to be combined using an & operator to only allow returns if
+    track = Q("term", track=student['track'])
 
     # Creates a query adding up all the previous scores,
     # with a requirement that the mentor is available for extended if the student needs it
+    # TODO: Re-work how this if works, shouldn't be necessary, see track query above.
+    #  Change needs to be tested irregardless.
     if student["requireExtended"]:
         requireExtended = Q("term", okExtended=True)
         combined_query = (
@@ -107,7 +109,7 @@ def evaluate_score(student, client, num_resp: int = 25):
                                  | company_q
                                  | background_rural
                                  | prefer_student_underrep
-                         ) & requireExtended
+                         ) & requireExtended & track
     else:
         combined_query = (
                 base_value
@@ -115,7 +117,7 @@ def evaluate_score(student, client, num_resp: int = 25):
                 | company_q
                 | background_rural
                 | prefer_student_underrep
-        )
+        ) & track
 
 
     # Timezone - this one's a bit more complex. See comments in script for more details.
@@ -201,7 +203,9 @@ if __name__ == '__main__':
         "interestCompanies": ["Microsoft", "Google", fake.company(), fake.company()],
         "interestTags": ["javascript", "java", "python", "php"],
         "requireExtended": False,
+        "track": "Beginner"
     }
+    client = Elasticsearch(hosts=['10.0.3.33:9200'])
 
-    resp = evaluate_score(student)
+    resp = evaluate_score(student, client)
     print("Done!")
