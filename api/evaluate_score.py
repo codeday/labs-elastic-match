@@ -5,6 +5,9 @@ from faker import Faker
 import random
 from elasticsearch_dsl import Q, SF
 from elasticsearch_dsl.query import MatchNone, MatchAll
+from json import dumps
+
+
 # from typing import TypedDict, List
 
 # Maybe typedDict isn't actually supported???
@@ -25,13 +28,29 @@ def evaluate_score(student, client, num_resp: int = 25):
 
     See above student class for schema
     """
+
+    # Adjust weights here:
+    base_score = 1.0
+    company_score = 1.0
+    rural_score = 1.0
+    tags_score = 1.0
+    underrep_score = 1.0
+    # Timezone weights are found in the timezone script query
+
     s = elasticsearch_dsl.Search(using=client, index="mentors_index").extra(
         explain=True
     )
 
-    # Adds one to all queries in order to be sure that, in the worst case,
+    # Start by filtering the search by requireExtended
+    s = s.filter("term", track=student["track"])
+
+    # And also by requireExtended
+    if student["requireExtended"]:
+        s = s.filter("term", okExtended="true")
+
+    # Adds one to all remaining entries in order to be sure that, in the worst case,
     # there are enough responses, even if they aren't a good fit
-    base_value = Q("constant_score", filter=MatchAll())
+    base_value = Q("constant_score", filter=MatchAll(), boost=base_score)
 
     # Uses a fuzzy query to determine if a student is interested in the mentor's company,
     # then if so adds `weight` to the score
@@ -41,20 +60,20 @@ def evaluate_score(student, client, num_resp: int = 25):
             company_q = Q(
                 "function_score",
                 query=Q("fuzzy", company=company),
-                weight="1",
+                weight=company_score,
                 boost_mode="replace",
             )
         else:
             company_q = company_q | Q(
                 "function_score",
                 query=Q("fuzzy", company=company),
-                weight="1",
+                weight=company_score,
                 boost_mode="replace",
             )
 
     # If background_rural matches on mentor and student, then add one to the score
     background_rural = Q(
-        "constant_score", filter=Q("term", backgroundRural=student["rural"])
+        "constant_score", filter=Q("term", backgroundRural=student["rural"]), boost=rural_score
     )
 
     # Adds `weight` * the number of matching tags to score
@@ -64,14 +83,14 @@ def evaluate_score(student, client, num_resp: int = 25):
             tags_matching = Q(
                 "function_score",
                 query=Q("term", proj_tags=interest),
-                weight=1,
+                weight=tags_score,
                 boost_mode="replace",
             )
         else:
             tags_matching = tags_matching | Q(
                 "function_score",
                 query=Q("term", proj_tags=interest),
-                weight=1,
+                weight=tags_score,
                 boost_mode="replace",
             )
 
@@ -82,7 +101,7 @@ def evaluate_score(student, client, num_resp: int = 25):
                 "function_score": {
                     "field_value_factor": {
                         "field": "preferStudentUnderRep",
-                        "factor": 1,
+                        "factor": underrep_score,
                         "modifier": "none",
                         "missing": 0,
                     }
@@ -93,32 +112,13 @@ def evaluate_score(student, client, num_resp: int = 25):
         # Adds 0 to query if nothing is found
         prefer_student_underrep = Q("constant_score", filter=MatchNone())
 
-    # Return 1 if track matches and 0 if it does not.
-    # Designed to be combined using an & operator to only allow returns if
-    track = Q("term", track=student['track'])
-
-    # Creates a query adding up all the previous scores,
-    # with a requirement that the mentor is available for extended if the student needs it
-    # TODO: Re-work how this if works, shouldn't be necessary, see track query above.
-    #  Change needs to be tested irregardless.
-    if student["requireExtended"]:
-        requireExtended = Q("term", okExtended=True)
-        combined_query = (
-                                 base_value
-                                 | tags_matching
-                                 | company_q
-                                 | background_rural
-                                 | prefer_student_underrep
-                         ) & requireExtended & track
-    else:
-        combined_query = (
-                base_value
-                | tags_matching
-                | company_q
-                | background_rural
-                | prefer_student_underrep
-        ) & track
-
+    combined_query = (
+            base_value
+            | tags_matching
+            | company_q
+            | background_rural
+            | prefer_student_underrep
+    )
 
     # Timezone - this one's a bit more complex. See comments in script for more details.
     # Multiplies it's value by the previous scores, allowing it to reduce, set to zero, and increase scores.
@@ -191,7 +191,7 @@ def evaluate_score(student, client, num_resp: int = 25):
     return resp
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     fake = Faker()
 
     student = {
@@ -202,10 +202,10 @@ if __name__ == '__main__':
         "timezone": random.randint(-8, 4),
         "interestCompanies": ["Microsoft", "Google", fake.company(), fake.company()],
         "interestTags": ["javascript", "java", "python", "php"],
-        "requireExtended": False,
-        "track": "Beginner"
+        "requireExtended": True,
+        "track": "Beginner",
     }
-    client = Elasticsearch(hosts=['10.0.3.33:9200'])
+    client = Elasticsearch(hosts=["10.0.3.33:9200"])
 
     resp = evaluate_score(student, client)
     print("Done!")

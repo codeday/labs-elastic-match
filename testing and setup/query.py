@@ -8,11 +8,13 @@ def get_matches():
         "id": str(uuid.uuid4()),
         "name": "TestTest",
         "rural": True,
-        "underrepresented": True,
-        "timezone": random.randint(-8, 4),
+        "underrepresented": False,
+        # "timezone": random.randint(-7, -4),
+        "timezone": -4,
         "interestCompanies": ['Microsoft', "Google"],
-        "interestTags": ["javascript", "java", "python", "php"],
-        "requireExtended": False
+        "interestTags": ["Backend", "Data", "python", "php"],
+        "requireExtended": False,
+        "track": "Advanced"
     }
 
     body = {
@@ -21,6 +23,7 @@ def get_matches():
     print(body)
     r = requests.get("http://localhost:9900/matches", data=body)
     print(r.content)
+    print(str(student["timezone"]) + str([student["score"] for student in json.loads(r.content)]))
 
 
 def store_student():
@@ -43,4 +46,4 @@ def store_student():
     print(r.content)
 
 
-store_student()
+get_matches()
