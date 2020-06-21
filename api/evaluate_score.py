@@ -32,8 +32,8 @@ def evaluate_score(student, client, num_resp: int = 25):
     # Adjust weights here:
     base_score = 1.0
     company_score = 1.0
-    rural_score = 1.0
-    tags_score = 1.0
+    rural_score = 2.0
+    tags_score = 3.0
     underrep_score = 1.0
     # Timezone weights are found in the timezone script query
 
@@ -47,6 +47,9 @@ def evaluate_score(student, client, num_resp: int = 25):
     # And also by requireExtended
     if student["requireExtended"]:
         s = s.filter("term", okExtended="true")
+
+    if not student["underrepresented"]:
+        s = s.exclude("term", preferStudentUnderRep=2)
 
     # Adds one to all remaining entries in order to be sure that, in the worst case,
     # there are enough responses, even if they aren't a good fit
@@ -71,53 +74,40 @@ def evaluate_score(student, client, num_resp: int = 25):
                 boost_mode="replace",
             )
 
-    # If background_rural matches on mentor and student, then add one to the score
-    background_rural = Q(
-        "constant_score", filter=Q("term", backgroundRural=student["rural"]), boost=rural_score
-    )
+
+    if student["rural"]:
+        # If background_rural matches on mentor and student, then add one to the score
+        background_rural = Q(
+            "constant_score", filter=Q("term", backgroundRural=student["rural"]), boost=rural_score
+        )
+    else:
+        background_rural = Q("constant_score", filter=MatchNone())
 
     # Adds `weight` * the number of matching tags to score
     tags_matching = None
+    num_interests = len(student["interestTags"])
     for interest in student["interestTags"]:
         if tags_matching is None:
             tags_matching = Q(
                 "function_score",
                 query=Q("term", proj_tags=interest),
-                weight=tags_score,
+                weight=tags_score/num_interests,
                 boost_mode="replace",
             )
         else:
             tags_matching = tags_matching | Q(
                 "function_score",
                 query=Q("term", proj_tags=interest),
-                weight=tags_score,
+                weight=tags_score/num_interests,
                 boost_mode="replace",
             )
-
-    # If student is underrepresented, add the value of `prefer_student_underrep` * `factor` to the score
-    if student["underrepresented"]:
-        prefer_student_underrep = Q(
-            {
-                "function_score": {
-                    "field_value_factor": {
-                        "field": "preferStudentUnderRep",
-                        "factor": underrep_score,
-                        "modifier": "none",
-                        "missing": 0,
-                    }
-                }
-            }
-        )
-    else:
-        # Adds 0 to query if nothing is found
-        prefer_student_underrep = Q("constant_score", filter=MatchNone())
 
     combined_query = (
             base_value
             | tags_matching
             | company_q
             | background_rural
-            | prefer_student_underrep
+            # | prefer_student_underrep
     )
 
     # Timezone - this one's a bit more complex. See comments in script for more details.
@@ -169,9 +159,11 @@ def evaluate_score(student, client, num_resp: int = 25):
             return 0.75;
         }
     } else {
-        if (diff <= 3) {
+        if (diff <= 2) {
             // Mentor is not ok with time difference and student has normal time
             return 1;
+        } else if (diff == 3) {
+            return 0.75;
         } else {
             // Mentor is not ok with time difference and student has weird time
             return 0;
