@@ -74,7 +74,6 @@ def evaluate_score(student, client, num_resp: int = 25):
                 boost_mode="replace",
             )
 
-
     if student["rural"]:
         # If background_rural matches on mentor and student, then add one to the score
         background_rural = Q(
@@ -91,14 +90,14 @@ def evaluate_score(student, client, num_resp: int = 25):
             tags_matching = Q(
                 "function_score",
                 query=Q("term", proj_tags=interest),
-                weight=tags_score/num_interests,
+                weight=tags_score / num_interests,
                 boost_mode="replace",
             )
         else:
             tags_matching = tags_matching | Q(
                 "function_score",
                 query=Q("term", proj_tags=interest),
-                weight=tags_score/num_interests,
+                weight=tags_score / num_interests,
                 boost_mode="replace",
             )
 
@@ -107,8 +106,12 @@ def evaluate_score(student, client, num_resp: int = 25):
             | tags_matching
             | company_q
             | background_rural
-            # | prefer_student_underrep
+        # | prefer_student_underrep
     )
+
+    # Decay the combined score based on the number of students who already voted for that
+    combined_query = Q("function_score", query=combined_query,
+                       functions=SF("gauss", numStudentsSelected={"origin": 0, "scale": 2, "offset": 2, "decay": 0.50}))
 
     # Timezone - this one's a bit more complex. See comments in script for more details.
     # Multiplies it's value by the previous scores, allowing it to reduce, set to zero, and increase scores.
