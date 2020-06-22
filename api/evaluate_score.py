@@ -1,7 +1,6 @@
 import elasticsearch_dsl
 from elasticsearch import Elasticsearch
 import uuid
-from faker import Faker
 import random
 from elasticsearch_dsl import Q, SF
 from elasticsearch_dsl.query import MatchNone, MatchAll
@@ -187,15 +186,14 @@ def evaluate_score(student, client, num_resp: int = 25):
 
 
 if __name__ == "__main__":
-    fake = Faker()
 
     student = {
         "id": uuid.uuid4(),
-        "name": fake.name(),
+        "name": 'John Peter',
         "rural": True,
         "underrepresented": True,
         "timezone": random.randint(-8, 4),
-        "interestCompanies": ["Microsoft", "Google", fake.company(), fake.company()],
+        "interestCompanies": ["Microsoft", "Google"],
         "interestTags": ["javascript", "java", "python", "php"],
         "requireExtended": True,
         "track": "Beginner",

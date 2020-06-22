@@ -7,9 +7,9 @@ from flask import Flask, current_app
 from flask_restful import Api
 from jwt import decode, exceptions
 from werkzeug.exceptions import BadRequest
-from api.evaluate_score import evaluate_score
+from evaluate_score import evaluate_score
 import json
-from elasticsearch_dsl import UpdateByQuery
+from elasticsearch_dsl import UpdateByQuery, Search, Q
 
 # Long story short, imports bad.
 # This is needed to allow the cogs to import database, as python doesn't check in the parent directory otherwise.
@@ -39,7 +39,7 @@ def matches(student_data):
     return json.dumps(resp)
 
 
-@app.route("/matches/<choice_data>", methods=["PUT"])
+@app.route("/votes/<choice_data>", methods=["PUT"])
 def save_choices(choice_data):
     try:
         data = decode(choice_data, current_app.jwt_key, algorithms=["HS256"])
@@ -65,6 +65,19 @@ def save_choices(choice_data):
         except RequestError as e:
             raise BadRequest("Something went wrong with the update, please try again.")
     return resps
+
+
+@app.route("/votes/<student_id>", methods=["GET"])
+def retrieve_votes(student_id):
+    try:
+        data = decode(student_id, current_app.jwt_key, algorithms=["HS256"])
+    except exceptions.DecodeError:
+        raise BadRequest("Something is wrong with your JWT Encoding.")
+    s = Search(using=current_app.elasticsearch, index="mentors_index").extra(
+        explain=True
+    )
+    s.filter("nested", path="listStudentsSelected", query=Q("term", student_id=data.student_id))
+    resp = s.execute()
 
 
 if __name__ == "__main__":

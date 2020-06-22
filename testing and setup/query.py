@@ -1,6 +1,9 @@
 import requests
 from jwt import encode
 import uuid, random, json
+import os
+
+JWT_KEY = os.getenv("JWT_KEY")
 
 
 def get_matches():
@@ -18,10 +21,9 @@ def get_matches():
     }
 
     body = {
-        "jwt_encoded_student": encode(student, "TESTTESTTEST")
+        "jwt_encoded_student": encode(student, JWT_KEY)
     }
-    print(body)
-    r = requests.get("http://localhost:9900/matches", data=body)
+    r = requests.get("http://localhost:9900/matches/" + str(body))
     print(r.content)
     print(str(student["timezone"]) + str([student["score"] for student in json.loads(r.content)]))
 
@@ -38,12 +40,12 @@ def store_student():
         ]
     }
 
-    body = {
-        "jwt_encoded_store_data": encode(data, "TESTTESTTEST")
-    }
-    print(body)
-    r = requests.post("http://localhost:9900/matches", data=body)
+    # body = {
+    #     "jwt_encoded_store_data": encode(data, JWT_KEY)
+    # }
+    # print(body)
+    r = requests.put("http://localhost:9900/votes/" + encode(data, JWT_KEY))
     print(r.content)
 
 
-get_matches()
+store_student()
