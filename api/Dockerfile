@@ -10,4 +10,3 @@ COPY ./app.py ./evaluate_score.py ./wsgi.py ./gunicorn.sh ./
 
 RUN chmod +x /app/gunicorn.sh
 CMD /app/gunicorn.sh
-#CMD tail -f /dev/null
