@@ -64,7 +64,8 @@ def save_choices(choice_data):
             resps.append(ubq_data.execute().to_dict())
         except RequestError as e:
             raise InternalServerError("Something went wrong with the update, please try again.")
-    return json.dumps({"ok": True})
+    num_updated = sum([resp["updated"] for resp in resps])
+    return json.dumps({"ok": True, "updated": num_updated})
 
 
 @app.route("/votes/<student_id>", methods=["GET"])

@@ -20,10 +20,8 @@ def get_matches():
         "track": "Advanced"
     }
 
-    body = {
-        "jwt_encoded_student": encode(student, JWT_KEY)
-    }
-    r = requests.get("http://localhost:9900/matches/" + str(body))
+    data = encode(student, JWT_KEY).decode("utf-8")
+    r = requests.get("http://labs-elastic-match.codeday.cloud/matches/" + data)
     print(r.content)
     print(str(student["timezone"]) + str([student["score"] for student in json.loads(r.content)]))
 
@@ -32,19 +30,18 @@ def store_student():
     data = {
         "student_id": "rec03s7tmgmxVlDZu",
         "votes": [
-            {"proj_id": "recNRlhAmOOUy32V3", "choice": 1},
-            {"proj_id": "reclyXfRCjMAtSVn0", "choice": 2},
-            {"proj_id": "recaMlxDylhMQKmjx", "choice": 3},
-            {"proj_id": "recFpuV5Ryhi9KfzB", "choice": 4},
-            {"proj_id": "recRJGXhTr9lEq1tO", "choice": 5},
+            {"proj_id": "recjcesxayRUS9kIH", "choice": 1},
+            {"proj_id": "recfRVcYvECgJ0BlY", "choice": 2},
+            {"proj_id": "recicI3vLpk1uPV3X", "choice": 3},
+            {"proj_id": "recJnr93NhrWClUX2", "choice": 4},
+            {"proj_id": "reddc4PQBsmPrR3Eeiu", "choice": 5},
         ]
     }
 
-    # body = {
-    #     "jwt_encoded_store_data": encode(data, JWT_KEY)
-    # }
-    # print(body)
-    r = requests.put("http://localhost:9900/votes/" + encode(data, JWT_KEY))
+    body = encode(data, JWT_KEY).decode("utf-8")
+    print(body)
+    # r = requests.put("http://labs-elastic-match.codeday.cloud/votes/" + body)
+    r = requests.put("http://localhost:9900/votes/" + body)
     print(r.content)
 
 

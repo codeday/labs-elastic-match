@@ -1,9 +1,7 @@
 from json import load
 from elasticsearch_dsl import connections
 from models import MentorProject
-from faker import Faker
-
-fake = Faker()
+import random
 
 conn = connections.create_connection(hosts=['10.0.3.33:9200'], timeout=20)
 
@@ -12,7 +10,7 @@ with open("mentors.json", "r") as project_json_file:
 
     for project in project_json:
         project = MentorProject(
-            id=project.get("mentor_id"),
+            mentor_id=project.get("mentor_id"),
             name=project.get("name"),
             company=project.get("company"),
             bio=project.get("bio"),
@@ -20,7 +18,7 @@ with open("mentors.json", "r") as project_json_file:
             preferStudentUnderRep=project.get("preferStudentUnderRep"),
             preferToolExistingKnowledge=project.get("preferToolExistingKnowledge"),
             okExtended=project.get("okExtended"),
-            okTimezoneDifference=fake.pybool(),
+            okTimezoneDifference=bool(random.getrandbits),
             timezone=project.get("timezone"),
             proj_id=project.get("proj_id"),
             proj_description=project.get("proj_description"),

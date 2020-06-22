@@ -20,7 +20,7 @@ class StudentVote(InnerDoc):
 
 
 class MentorProject(Document):
-    id = Keyword(required=True)
+    mentor_id = Keyword(required=True)
     name = Keyword(required=True)
     company = Text()
     bio = Text()
