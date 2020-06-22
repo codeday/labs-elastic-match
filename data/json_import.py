@@ -10,7 +10,6 @@ with open("mentors.json", "r") as project_json_file:
 
     for project in project_json:
         project = MentorProject(
-            mentor_id=project.get("mentor_id"),
             name=project.get("name"),
             company=project.get("company"),
             bio=project.get("bio"),
@@ -20,7 +19,7 @@ with open("mentors.json", "r") as project_json_file:
             okExtended=project.get("okExtended"),
             okTimezoneDifference=bool(random.getrandbits),
             timezone=project.get("timezone"),
-            proj_id=project.get("proj_id"),
+            id=project.get("proj_id"),
             proj_description=project.get("proj_description"),
             proj_tags=project.get("proj_tags"),
             track=project.get("track")

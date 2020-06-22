@@ -20,7 +20,6 @@ class StudentVote(InnerDoc):
 
 
 class MentorProject(Document):
-    mentor_id = Keyword(required=True)
     name = Keyword(required=True)
     company = Text()
     bio = Text()
@@ -30,7 +29,7 @@ class MentorProject(Document):
     okExtended = Boolean(required=True)
     okTimezoneDifference = Boolean(required=True)
     timezone = Integer(required=True)  # +- UTC
-    proj_id = Keyword(required=True)
+    id = Keyword(required=True)
     proj_description = Text(required=True)
     proj_tags = Keyword(multi=True)
     numStudentsSelected = Short()

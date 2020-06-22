@@ -34,7 +34,7 @@ def store_student():
             {"proj_id": "recfRVcYvECgJ0BlY", "choice": 2},
             {"proj_id": "recicI3vLpk1uPV3X", "choice": 3},
             {"proj_id": "recJnr93NhrWClUX2", "choice": 4},
-            {"proj_id": "reddc4PQBsmPrR3Eeiu", "choice": 5},
+            {"proj_id": "rec4PQBsmPrR3Eeiu", "choice": 5},
         ]
     }
 

@@ -49,7 +49,7 @@ def save_choices(choice_data):
     for vote in data["votes"]:
         ubq_data = (
             UpdateByQuery(using=current_app.elasticsearch, index="mentors_index")
-            .query("term", proj_id=vote["proj_id"])
+            .query("term", id=vote["proj_id"])
             .script(
                 source='if(!ctx._source.containsKey("listStudentsSelected")){ ctx._source.listStudentsSelected = new ArrayList();} ctx._source.listStudentsSelected.add(params.student);ctx._source.numStudentsSelected++;',
                 params={
@@ -73,7 +73,7 @@ def retrieve_votes(student_id):
     try:
         data = decode(student_id, current_app.jwt_key, algorithms=["HS256"])
     except exceptions.DecodeError:
-        raise BadRequest("Something is wrong with your JWT Encoding.")
+        raise Unauthorized("Something is wrong with your JWT Encoding.")
     s = Search(using=current_app.elasticsearch, index="mentors_index").extra(
         explain=True
     )
