@@ -21,8 +21,9 @@ def get_matches():
     }
 
     data = encode(student, JWT_KEY).decode("utf-8")
-    r = requests.get("http://labs-elastic-match.codeday.cloud/matches/" + data)
-    print(r.content)
+    # r = requests.get("http://labs-elastic-match.codeday.cloud/matches/" + data)
+    r = requests.get("http://localhost:9900/matches/" + data)
+    json_data = json.loads(r.content.decode("utf-8"))
     print(str(student["timezone"]) + str([student["score"] for student in json.loads(r.content)]))
 
 
@@ -45,4 +46,4 @@ def store_student():
     print(r.content)
 
 
-store_student()
+get_matches()

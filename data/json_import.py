@@ -17,7 +17,7 @@ with open("mentors.json", "r") as project_json_file:
             preferStudentUnderRep=project.get("preferStudentUnderRep"),
             preferToolExistingKnowledge=project.get("preferToolExistingKnowledge"),
             okExtended=project.get("okExtended"),
-            okTimezoneDifference=bool(random.getrandbits),
+            # okTimezoneDifference=True,
             timezone=project.get("timezone"),
             id=project.get("proj_id"),
             proj_description=project.get("proj_description"),

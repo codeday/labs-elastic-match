@@ -151,11 +151,9 @@ def evaluate_score(student, client, num_resp: int = 25):
     }
     
     if (mentor_ok_tz_diff == true) {
-        if (student_tz < 22) {
-            if (student_tz > 16) {
-                // Mentor is OK with the time difference and student has a large time difference
-                return 1;
-            }
+        if ((student_tz < 22) && (student_tz > 16)) {
+            // Mentor is OK with the time difference and student has a large time difference
+            return 1;
         } else {
             // Mentor is ok with time difference and student has a normal time
             return 0.75;
@@ -187,6 +185,7 @@ def evaluate_score(student, client, num_resp: int = 25):
 
 if __name__ == "__main__":
 
+    # Out of date
     student = {
         "id": uuid.uuid4(),
         "name": 'John Peter',
