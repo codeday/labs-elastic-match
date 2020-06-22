@@ -6,7 +6,7 @@ from elasticsearch import Elasticsearch, RequestError
 from flask import Flask, current_app
 from flask_restful import Api
 from jwt import decode, exceptions
-from werkzeug.exceptions import BadRequest
+from werkzeug.exceptions import BadRequest, InternalServerError
 from evaluate_score import evaluate_score
 import json
 from elasticsearch_dsl import UpdateByQuery, Search, Q
@@ -63,8 +63,8 @@ def save_choices(choice_data):
         try:
             resps.append(ubq_data.execute().to_dict())
         except RequestError as e:
-            raise BadRequest("Something went wrong with the update, please try again.")
-    return resps
+            raise InternalServerError("Something went wrong with the update, please try again.")
+    return json.dumps(resps)
 
 
 @app.route("/votes/<student_id>", methods=["GET"])
