@@ -6,7 +6,7 @@ from elasticsearch import Elasticsearch, RequestError
 from flask import Flask, current_app
 from flask_restful import Api
 from jwt import decode, exceptions
-from werkzeug.exceptions import BadRequest, InternalServerError
+from werkzeug.exceptions import InternalServerError, Unauthorized
 from evaluate_score import evaluate_score
 import json
 from elasticsearch_dsl import UpdateByQuery, Search, Q
@@ -30,7 +30,7 @@ def matches(student_data):
     try:
         data = decode(student_data, current_app.jwt_key, algorithms=["HS256"])
     except exceptions.DecodeError:
-        raise BadRequest("Something is wrong with your JWT Encoding.")
+        raise Unauthorized("Something is wrong with your JWT Encoding.")
     ela_resp = evaluate_score(data, current_app.elasticsearch, 25)
     resp = [
         {"score": hit._score, "project": hit._source.to_dict()}
@@ -44,7 +44,7 @@ def save_choices(choice_data):
     try:
         data = decode(choice_data, current_app.jwt_key, algorithms=["HS256"])
     except exceptions.DecodeError:
-        raise BadRequest("Something is wrong with your JWT Encoding.")
+        raise Unauthorized("Something is wrong with your JWT Encoding.")
     resps = []
     for vote in data["votes"]:
         ubq_data = (
@@ -64,7 +64,7 @@ def save_choices(choice_data):
             resps.append(ubq_data.execute().to_dict())
         except RequestError as e:
             raise InternalServerError("Something went wrong with the update, please try again.")
-    return json.dumps(resps)
+    return json.dumps({"ok": True})
 
 
 @app.route("/votes/<student_id>", methods=["GET"])
