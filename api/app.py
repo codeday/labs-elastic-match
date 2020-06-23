@@ -13,7 +13,8 @@ from elasticsearch_dsl import UpdateByQuery, Search, Q
 
 # Long story short, imports bad.
 # This is needed to allow the cogs to import database, as python doesn't check in the parent directory otherwise.
-currentdir = os.path.dirname(os.path.abspath(inspect.getfile(inspect.currentframe())))
+currentdir = os.path.dirname(os.path.abspath(
+    inspect.getfile(inspect.currentframe())))
 parentdir = os.path.dirname(currentdir)
 sys.path.insert(0, parentdir)
 
@@ -48,7 +49,8 @@ def save_choices(choice_data):
     resps = []
     for vote in data["votes"]:
         ubq_data = (
-            UpdateByQuery(using=current_app.elasticsearch, index="mentors_index")
+            UpdateByQuery(using=current_app.elasticsearch,
+                          index="mentors_index")
             .query("term", id=vote["proj_id"])
             .script(
                 source='if(!ctx._source.containsKey("listStudentsSelected")){ ctx._source.listStudentsSelected = new ArrayList();} ctx._source.listStudentsSelected.add(params.student);ctx._source.numStudentsSelected++;',
@@ -63,7 +65,8 @@ def save_choices(choice_data):
         try:
             resps.append(ubq_data.execute().to_dict())
         except RequestError as e:
-            raise InternalServerError("Something went wrong with the update, please try again.")
+            raise InternalServerError(
+                "Something went wrong with the update, please try again.")
     num_updated = sum([resp["updated"] for resp in resps])
     return json.dumps({"ok": True, "updated": num_updated})
 
@@ -77,9 +80,10 @@ def retrieve_votes(student_id):
     s = Search(using=current_app.elasticsearch, index="mentors_index").extra(
         explain=True
     )
-    s.filter("nested", path="listStudentsSelected", query=Q("term", student_id=data["student_id"]))
+    s.filter("nested", path="listStudentsSelected",
+             query=Q("term", student_id=data["student_id"]))
     resp = s.execute()
-    return json.dumps(resp)
+    return json.dumps(resp.to_dict())
 
 
 if __name__ == "__main__":
