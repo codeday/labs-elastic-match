@@ -77,7 +77,7 @@ def retrieve_votes(student_id):
     s = Search(using=current_app.elasticsearch, index="mentors_index").extra(
         explain=True
     )
-    s.filter("nested", path="listStudentsSelected", query=Q("term", student_id["data.student_id"]))
+    s.filter("nested", path="listStudentsSelected", query=Q("term", student_id=data["student_id"]))
     resp = s.execute()
     return json.dumps(resp)
 
