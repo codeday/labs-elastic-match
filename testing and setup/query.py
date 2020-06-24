@@ -47,7 +47,9 @@ def store_student():
 
 
 def get_votes():
-    data = "rec03s7tmgmxVlDZu"
+    data = {
+        "student_id": "rec03s7tmgmxVlDZu"
+    }
     body = encode(data, JWT_KEY).decode("utf-8")
     print(body)
     # r = requests.put("http://labs-elastic-match.codeday.cloud/votes/" + body)
