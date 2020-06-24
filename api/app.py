@@ -114,7 +114,7 @@ def retrieve_votes(student_id):
                 "query": {
                     "bool": {
                         "must":
-                            {"term": {"listStudentsSelected.student_id": data}}
+                            {"term": {"listStudentsSelected.student_id": data["student_id"]}}
                     }
                 }
             }
