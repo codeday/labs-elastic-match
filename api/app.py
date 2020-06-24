@@ -114,8 +114,7 @@ def retrieve_votes(student_id):
                 "query": {
                     "bool": {
                         "must":
-                            {"term": {"listStudentsSelected.student_id": data["student_id"]}}
-
+                            {"term": {"listStudentsSelected.student_id": data}}
                     }
                 }
             }
@@ -126,7 +125,7 @@ def retrieve_votes(student_id):
     # clean_resp.append([{"project_id": project["_source"]["id"], "choice": choice["choice"]} for choice in project["_source"]["listStudentsSelected"] if choice['student_id'] == data["student_id"]])
     clean_resp = []
     for project in resp["hits"]["hits"]:
-        for choice in project["_source"]["listStudentsSelected"] :
+        for choice in project["_source"]["listStudentsSelected"]:
             if choice['student_id'] == data["student_id"]:
                 clean_resp.append({"project_id": project["_source"]["id"], "choice": choice["choice"]})
     return json.dumps(clean_resp)
