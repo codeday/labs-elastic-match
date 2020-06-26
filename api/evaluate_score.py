@@ -141,7 +141,7 @@ def evaluate_score(student, client, num_resp: int = 25):
     } else {
         mentor_tz = (int)doc['timezone'].value;
     }
-    int diff = Math.abs(student_tz - mentor_tz);
+    int diff = (int)Math.abs(student_tz - mentor_tz);
 
     boolean mentor_ok_tz_diff = false;
     if (doc['okTimezoneDifference'].size() == 0) {
