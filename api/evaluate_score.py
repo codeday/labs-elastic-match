@@ -101,10 +101,10 @@ def evaluate_score(student, client, num_resp: int = 25):
             )
 
     combined_query = (
-            base_value
-            | tags_matching
-            | company_q
-            | background_rural
+        base_value
+        | tags_matching
+        | company_q
+        | background_rural
         # | prefer_student_underrep
     )
 
@@ -141,17 +141,17 @@ def evaluate_score(student, client, num_resp: int = 25):
     } else {
         mentor_tz = (int)doc['timezone'].value;
     }
-    int diff = student_tz - mentor_tz;
-    
+    int diff = Math.abs(student_tz - mentor_tz);
+
     boolean mentor_ok_tz_diff = false;
     if (doc['okTimezoneDifference'].size() == 0) {
         mentor_ok_tz_diff = false;
     } else {
         mentor_ok_tz_diff = doc['okTimezoneDifference'].value;
     }
-    
+
     if (mentor_ok_tz_diff == true) {
-        if ((student_tz < 22) && (student_tz > 16)) {
+        if (student_tz > 0) {
             // Mentor is OK with the time difference and student has a large time difference
             return 1;
         } else {
