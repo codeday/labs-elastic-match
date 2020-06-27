@@ -110,7 +110,7 @@ def evaluate_score(student, client, num_resp: int = 25):
 
     # Decay the combined score based on the number of students who already voted for that
     combined_query = Q("function_score", query=combined_query,
-                       functions=SF("gauss", numStudentsSelected={"origin": 0, "scale": 2, "offset": 2, "decay": 0.50}))
+                       functions=SF("gauss", numStudentsSelected={"origin": 0, "scale": 3, "offset": 3, "decay": 0.50}))
 
     # Timezone - this one's a bit more complex. See comments in script for more details.
     # Multiplies it's value by the previous scores, allowing it to reduce, set to zero, and increase scores.
