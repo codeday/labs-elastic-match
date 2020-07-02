@@ -2,7 +2,7 @@ from typing import Tuple
 from copy import deepcopy
 
 
-def check_for_lost_students(starting_students: int, project_data_dict: dict, placement_dict: dict) -> int:
+def count_lost_students(starting_students_count: int, project_data_dict: dict, placement_dict: dict) -> int:
     students = []
     for i in [[student for student in project["students"]] for k, project in placement_dict.items()]:
         for j in i:
@@ -11,7 +11,19 @@ def check_for_lost_students(starting_students: int, project_data_dict: dict, pla
               project_data_dict.items()]:
         for j in i:
             students.append(j)
-    return starting_students - len(set(students))
+    return starting_students_count - len(set(students))
+
+
+def find_lost_student_ids(starting_students_list: list, project_data_dict: dict, placement_dict: dict) -> list:
+    students = []
+    for i in [[student for student in project["students"]] for k, project in placement_dict.items()]:
+        for j in i:
+            students.append(j)
+    for i in [[student["student_id"] for student in project["listStudentsSelected"]] for k, project in
+              project_data_dict.items()]:
+        for j in i:
+            students.append(j)
+    return list(set(starting_students_list) - set(students))
 
 
 def unwrap_student_data(project_data_dict: dict) -> dict:
@@ -23,17 +35,23 @@ def unwrap_student_data(project_data_dict: dict) -> dict:
             intermediate_list.append({student["student_id"]: {proj_id: student["choice"]}})
             list_students.add(student["student_id"])
     for student_id in list_students:
-        student_proj_list = []
+        unwrapped_dict[student_id] = {}
         for proj_data in intermediate_list:
-            student_proj_list.append()
-        unwrapped_dict[student_id] = [proj_data for proj_data in intermediate_list if proj_data.keys()[0] == ]
+            if list(proj_data.keys())[0] == student_id:
+                unwrapped_dict[student_id][list(proj_data[student_id].items())[0][0]] = \
+                list(proj_data[student_id].items())[0][1]
 
-
+    return unwrapped_dict
 
 
 def measure_match_effectiveness(placement_dict: dict, unwrapped_student_dict: dict) -> int:
+    score = 0
 
+    for project_id, project in placement_dict.items():
+        for student_id in project["students"]:
+            score += unwrapped_student_dict[student_id][project_id]
 
+    return score
 
 
 def count_student_votes(project_data_dict: dict, student_id: str) -> int:

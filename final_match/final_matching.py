@@ -24,6 +24,9 @@ for line in project_docs:
 
     student_placements[id_] = {"students": [], "proj_capacity": project_size_dict[id_]}
 
+unwrapped_student_data = unwrap_student_data(all_project_data)
+print(unwrapped_student_data)
+
 starting_students = []
 for i in [[student["student_id"] for student in project["listStudentsSelected"]] for k, project in
           all_project_data.items()]:
@@ -37,7 +40,7 @@ for id, project in all_project_data.items():
         all_project_data, student_placements = place_students_of_choice(all_project_data, student_placements, id, 1,
                                                                         project["proj_size_remaining"])
 print("Step 1")
-print(check_for_lost_students(num_starting_students, all_project_data, student_placements))
+print(count_lost_students(num_starting_students, all_project_data, student_placements))
 print("------------")
 
 # Do step 2
@@ -47,7 +50,7 @@ for id, project in all_project_data.items():
         all_project_data, student_placements = place_students_of_choice(all_project_data, student_placements, id, 1,
                                                                         project["proj_size_remaining"])
 print("Step 2")
-print(check_for_lost_students(num_starting_students, all_project_data, student_placements))
+print(count_lost_students(num_starting_students, all_project_data, student_placements))
 print("------------")
 
 # Do step 3
@@ -58,7 +61,7 @@ for id, project in _all_project_data.items():
                                                                                  id, [2, 15],
                                                                                  project["proj_size_remaining"])
 print("Step 3")
-print(check_for_lost_students(num_starting_students, all_project_data, student_placements))
+print(count_lost_students(num_starting_students, all_project_data, student_placements))
 print("------------")
 
 # # Do step 4
@@ -67,7 +70,7 @@ for id, project in _all_project_data.items():
     all_project_data, student_placements = place_students_of_choice_balanced(all_project_data, student_placements, id,
                                                                              [1, 2], project["proj_size_remaining"])
 print("Step 4")
-print(check_for_lost_students(num_starting_students, all_project_data, student_placements))
+print(count_lost_students(num_starting_students, all_project_data, student_placements))
 print("------------")
 
 for i in range(3, 16, 4):
@@ -80,11 +83,26 @@ for i in range(3, 16, 4):
                                                                                      [i, i + 1, i + 2, i + 3],
                                                                                      project["proj_size_remaining"])
 print("Step 4.5")
-print(check_for_lost_students(num_starting_students, all_project_data, student_placements))
+print(count_lost_students(num_starting_students, all_project_data, student_placements))
 print("------------")
 
 # Step 5 - Go through all missed projects?
+_all_project_data = deepcopy(all_project_data)
+for id, project in _all_project_data.items():
+    if len(project["listStudentsSelected"]) > 0:
+        all_project_data, student_placements = place_students_of_choice_balanced(all_project_data, student_placements,
+                                                                                 id, list(range(1, 20)),
+                                                                                 project["proj_size_remaining"])
 
+
+print("Step 5")
+print(count_lost_students(num_starting_students, all_project_data, student_placements))
+print(f"Lost student IDs: {find_lost_student_ids(list(unwrapped_student_data.keys()), all_project_data, student_placements)}")
+print("------------")
+
+
+score = measure_match_effectiveness(student_placements, unwrapped_student_data)
+print(f"This match score: {score}, or {score / num_starting_students} per student")
 
 # Check for issues
 count = 0
@@ -95,7 +113,7 @@ print("Unfilled Spots:" + str(count))
 
 count = 0
 for id, project in all_project_data.items():
-    if 0 < len(project["listStudentsSelected"]):
+    if len(project["listStudentsSelected"]) > 0:
         count += 1
         # count += len(project["listStudentsSelected"])
 print("Students left over:" + str(count))
