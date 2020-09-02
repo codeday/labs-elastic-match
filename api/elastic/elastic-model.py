@@ -1,4 +1,6 @@
-"""Houses the schema for the database and is used to create/update the index"""
+"""
+Houses the schema for the Elastic Database/
+"""
 
 from elasticsearch_dsl import (
     Document,

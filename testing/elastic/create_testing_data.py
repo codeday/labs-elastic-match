@@ -1,5 +1,9 @@
+"""
+Create fake testing data and load it into Elastic
+"""
+
 from elasticsearch_dsl import connections
-from models import MentorProject
+from elastic.models import MentorProject
 from uuid import uuid4
 import random
 from faker import Faker

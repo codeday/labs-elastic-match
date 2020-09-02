@@ -1,7 +1,5 @@
-"""Assorted helper funcs for various data manipulation things.
-
-Many may now be unused since a lot of the data manipulation was offloaded to before I see it,
-but I'm keeping these around for now
+"""
+Assorted helper funcs for various data manipulation things, almost entirely unused since this was moved upstream. Keeping it around for now.
 """
 import pytz, datetime
 from pyzipcode import ZipCodeDatabase

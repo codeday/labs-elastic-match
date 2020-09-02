@@ -1,10 +1,10 @@
 """Build the combined data dictionary and the student placement dictionary"""
 import json
-from final_match.helpers import *
+from old.elastic_query_creation.helpers import *
 from copy import deepcopy
 
-project_docs = open("./mentor_index_dump_2", "r", encoding="utf-8")
-project_size_data = json.load(open("./mentors_size_data.json", "r", encoding="utf-8"))
+project_docs = open("../../final_match/mentor_index_dump_2", "r", encoding="utf-8")
+project_size_data = json.load(open("../../final_match/mentors_size_data.json", "r", encoding="utf-8"))
 project_size_dict = {project["proj_id"]: project["proj_size_remaining"] for project in project_size_data}
 
 all_project_data = {}
@@ -118,7 +118,7 @@ for id, project in all_project_data.items():
         # count += len(project["listStudentsSelected"])
 print("Students left over:" + str(count))
 
-student_placement_file = open("./student_placement.json", "w")
+student_placement_file = open("../../final_match/student_placement.json", "w")
 json.dump(student_placements, student_placement_file)
 
 

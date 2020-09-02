@@ -1,3 +1,7 @@
+"""
+Some simple, example queries that can help to diagnose issues or get you up to speed.
+"""
+
 import requests
 from jwt import encode
 import uuid, random, json

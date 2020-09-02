@@ -4,12 +4,11 @@ import sys
 
 from elasticsearch import Elasticsearch, RequestError
 from flask import Flask, current_app
-from flask_restful import Api
 from jwt import decode, exceptions
 from werkzeug.exceptions import InternalServerError, Unauthorized
-from evaluate_score import evaluate_score
+from elastic.evaluate_score import evaluate_score_for_student
 import json
-from elasticsearch_dsl import UpdateByQuery, Search, Q
+from elasticsearch_dsl import UpdateByQuery
 
 # Long story short, imports bad.
 # This is needed to allow the cogs to import database, as python doesn't check in the parent directory otherwise.
@@ -44,7 +43,7 @@ def matches(student_data):
         data = decode(student_data, current_app.jwt_key, algorithms=["HS256"])
     except exceptions.DecodeError:
         raise Unauthorized("Something is wrong with your JWT Encoding.")
-    ela_resp = evaluate_score(data, current_app.elasticsearch, 25)
+    ela_resp = evaluate_score_for_student(data, current_app.elasticsearch, 25)
     resp = [
         {"score": hit._score, "project": hit._source.to_dict()}
         for hit in ela_resp.hits.hits

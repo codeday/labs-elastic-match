@@ -6,10 +6,9 @@ from elasticsearch_dsl import Q, SF
 from elasticsearch_dsl.query import MatchNone, MatchAll
 from json import dumps
 
-
+# This isn't currently supported in 3.7, however it helps to make things more clear for users
 # from typing import TypedDict, List
 
-# Maybe typedDict isn't actually supported???
 # class Student(TypedDict):
 #     id: str
 #     name: str
@@ -22,7 +21,7 @@ from json import dumps
 #     beginner: bool
 
 
-def evaluate_score(student, client, num_resp: int = 25):
+def evaluate_score_for_student(student, client, num_resp: int = 25):
     """Takes a student, represented as a dictionary and an elasticsearch-py client and returns an elastic response
 
     See above student class for schema
@@ -148,5 +147,5 @@ if __name__ == "__main__":
     }
     client = Elasticsearch(hosts=["10.0.3.33:9200"])
 
-    resp = evaluate_score(student, client)
+    resp = evaluate_score_for_student(student, client)
     print("Done!")

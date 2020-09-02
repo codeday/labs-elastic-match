@@ -1,5 +1,9 @@
+"""
+Load mentor data from CSV. Obsolete since this was moved to JSON
+"""
+
 from elasticsearch_dsl import connections
-from models import MentorProject
+from elastic.models import MentorProject
 from helpers import *
 from csv import DictReader
 
