@@ -118,4 +118,8 @@ for id, project in all_project_data.items():
         # count += len(project["listStudentsSelected"])
 print("Students left over:" + str(count))
 
+student_placement_file = open("./student_placement.json", "w")
+json.dump(student_placements, student_placement_file)
+
+
 print("lol")

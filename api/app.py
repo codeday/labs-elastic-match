@@ -21,7 +21,6 @@ sys.path.insert(0, parentdir)
 elastic_host = os.getenv("ELASTICSEARCH_URL")
 
 app = Flask(__name__)
-api = Api(app)
 app.elasticsearch = Elasticsearch(elastic_host)
 app.jwt_key = os.getenv("JWT_KEY")
 

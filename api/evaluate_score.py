@@ -40,7 +40,7 @@ def evaluate_score(student, client, num_resp: int = 25):
         explain=True
     )
 
-    # Start by filtering the search by requireExtended
+    # Start by filtering the search by track
     s = s.filter("term", track=student["track"])
 
     # And also by requireExtended
@@ -125,58 +125,7 @@ def evaluate_score(student, client, num_resp: int = 25):
             return True
         return False
     """
-    combined_query = Q(
-        "function_score",
-        query=combined_query,
-        functions=[
-            SF(
-                "script_score",
-                script={
-                    "source": """
-    int student_tz = params.student_tz;
-    int mentor_tz = 0;
-    // Null check. Even though timezone is required, somehow some null rows snuck in and bamboozled me
-    if (doc['timezone'].size() == 0) {
-        mentor_tz = 0;
-    } else {
-        mentor_tz = (int)doc['timezone'].value;
-    }
-    int diff = (int)Math.abs(student_tz - mentor_tz);
 
-    boolean mentor_ok_tz_diff = false;
-    if (doc['okTimezoneDifference'].size() == 0) {
-        mentor_ok_tz_diff = false;
-    } else {
-        mentor_ok_tz_diff = doc['okTimezoneDifference'].value;
-    }
-
-    if (mentor_ok_tz_diff == true) {
-        if (student_tz > 0) {
-            // Mentor is OK with the time difference and student has a large time difference
-            return 1;
-        } else {
-            // Mentor is ok with time difference and student has a normal time
-            return 0.75;
-        }
-    } else {
-        if (diff <= 2) {
-            // Mentor is not ok with time difference and student has normal time
-            return 1;
-        } else if (diff == 3) {
-            return 0.75;
-        } else {
-            // Mentor is not ok with time difference and student has weird time
-            return 0;
-        }
-    }
-    """,
-                    "params": {"student_tz": student["timezone"]},
-                },
-            )
-        ],
-        boost_mode="multiply",
-        score_mode="sum",
-    )
 
     s = s.query(combined_query)[0:num_resp]
     resp = s.execute()

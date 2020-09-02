@@ -3,6 +3,9 @@ from copy import deepcopy
 
 
 def count_lost_students(starting_students_count: int, project_data_dict: dict, placement_dict: dict) -> int:
+    """Returns
+
+    """
     students = []
     for i in [[student for student in project["students"]] for k, project in placement_dict.items()]:
         for j in i:
