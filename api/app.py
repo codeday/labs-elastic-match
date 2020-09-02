@@ -6,7 +6,7 @@ from elasticsearch import Elasticsearch, RequestError
 from flask import Flask, current_app
 from jwt import decode, exceptions
 from werkzeug.exceptions import InternalServerError, Unauthorized
-from elastic.evaluate_score import evaluate_score_for_student
+from elastic.evaluate_score import ScoreEvaluator
 import json
 from elasticsearch_dsl import UpdateByQuery
 
@@ -21,6 +21,7 @@ elastic_host = os.getenv("ELASTICSEARCH_URL")
 
 app = Flask(__name__)
 app.elasticsearch = Elasticsearch(elastic_host)
+app.scorer = ScoreEvaluator()
 app.jwt_key = os.getenv("JWT_KEY")
 
 
@@ -43,7 +44,7 @@ def matches(student_data):
         data = decode(student_data, current_app.jwt_key, algorithms=["HS256"])
     except exceptions.DecodeError:
         raise Unauthorized("Something is wrong with your JWT Encoding.")
-    ela_resp = evaluate_score_for_student(data, current_app.elasticsearch, 25)
+    ela_resp = app.scorer.evaluate_score_for_student(data, current_app.elasticsearch, 25)
     resp = [
         {"score": hit._score, "project": hit._source.to_dict()}
         for hit in ela_resp.hits.hits
