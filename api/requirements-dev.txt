@@ -1,0 +1,11 @@
+alembic==1.4.2
+blackcellmagic==0.0.2
+cryptography==2.9.2
+elasticsearch-dsl==7.2.1
+Flask-RESTful==0.3.8
+gunicorn==20.0.4
+jupyter==1.0.0
+matplotlib==3.2.2
+pipdeptree==1.0.0
+PyJWT==1.7.1
+requests==2.24.0

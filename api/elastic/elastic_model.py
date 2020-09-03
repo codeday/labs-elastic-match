@@ -36,6 +36,7 @@ class MentorProject(Document):
     proj_tags = Keyword(multi=True)
     numStudentsSelected = Short()
     listStudentsSelected = Nested(StudentVote)
+    listMentorSelected = Keyword(multi=True)
     track = Keyword(required=True)
 
     class Index:
@@ -45,12 +46,10 @@ class MentorProject(Document):
             "number_of_replicas": 0,
         }
 
-    def add_vote(self, student_id, choice):
-        self.listStudentsSelected.append(StudentVote(student_id=student_id, choice=choice))
-
     def save(self, **kwargs):
         self.numStudentsSelected = 0
         return super().save(**kwargs)
+
 
 
 class StudentSchema(Document):

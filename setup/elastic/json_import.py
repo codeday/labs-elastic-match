@@ -4,11 +4,12 @@ Loads the mentors into Elastic database from a JSON file.
 
 from json import load
 from elasticsearch_dsl import connections
-from elastic.models import MentorProject
+from elastic.elastic_model import MentorProject
+import os
 
 conn = connections.create_connection(hosts=['10.0.3.33:9200'], timeout=20)
 
-with open("../../data/mentors.json", "r", encoding="utf-8") as project_json_file:
+with open("mentors.json", "r", encoding="utf-8") as project_json_file:
     project_json = load(project_json_file, encoding="utf-8")
 
     errors = []
