@@ -4,6 +4,8 @@ from flask import current_app
 import json
 from elasticsearch_dsl import UpdateByQuery
 from elasticsearch import RequestError
+from elasticsearch.exceptions import ConflictError
+import time
 
 
 def student_matches(student_data):
@@ -46,6 +48,9 @@ def save_student_choices(choice_data):
             {"proj_id": "rec4PQBsmPrR3Eeiu", "choice": 5},
         ]
     }
+
+    It turns out that the UpdateByQuery function does not support waiting for the index to refresh for some reason.
+    We will have to find a way to work around that.
     """
     try:
         data = decode(choice_data, current_app.jwt_key, algorithms=["HS256"])
@@ -53,25 +58,32 @@ def save_student_choices(choice_data):
         raise Unauthorized("Something is wrong with your JWT Encoding.")
     resps = []
     for vote in data["votes"]:
-        ubq_data = (
-            UpdateByQuery(using=current_app.elasticsearch, index="mentors_index")
-            .query("term", id=vote["proj_id"])
-            .script(
-                source='if(!ctx._source.containsKey("listStudentsSelected")){ ctx._source.listStudentsSelected = new ArrayList();} ctx._source.listStudentsSelected.add(params.student);ctx._source.numStudentsSelected++;',
-                params={
-                    "student": {
-                        "student_id": data["student_id"],
-                        "choice": vote["choice"],
-                    }
-                },
+        while True:
+            ubq_data = (
+                UpdateByQuery(using=current_app.elasticsearch, index="mentor_index")
+                .params(refresh="wait_for")
+                .query("term", id=vote["proj_id"])
+                .script(
+                    source='if(!ctx._source.containsKey("listStudentsSelected")){ ctx._source.listStudentsSelected = new ArrayList();} ctx._source.listStudentsSelected.add(params.student);ctx._source.numStudentsSelected++;',
+                    params={
+                        "student": {
+                            "student_id": data["student_id"],
+                            "choice": vote["choice"],
+                        }
+                    },
+                )
             )
-        )
-        try:
-            resps.append(ubq_data.execute().to_dict())
-        except RequestError as e:
-            raise InternalServerError(
-                "Something went wrong with the update, please try again."
-            )
+            try:
+                resps.append(ubq_data.execute().to_dict())
+                time.sleep(0.1)
+                break
+            except RequestError as e:
+                raise InternalServerError(
+                    "Something went wrong with the update, please try again."
+                )
+            except ConflictError:
+                continue
+
     num_updated = sum([resp["updated"] for resp in resps])
     return json.dumps({"ok": True, "updated": num_updated})
 
@@ -87,7 +99,7 @@ def retrieve_student_votes(student_id):
     except exceptions.DecodeError:
         raise Unauthorized("Something is wrong with your JWT Encoding.")
     resp = current_app.elasticsearch.search(
-        index="mentors_index",
+        index="mentor_index",
         body={
             "query": {
                 "nested": {

@@ -29,12 +29,14 @@ class ScoreEvaluator(object):
         rural_score=2.0,
         tags_score=3.0,
         underrep_score=1.0,
+        index="mentor_index"
     ):
         self.base_score = base_score
         self.company_score = company_score
         self.rural_score = rural_score
         self.tags_score = tags_score
         self.underrep_score = underrep_score
+        self.index = index
 
     def evaluate_score_for_student(self, student, client, num_resp: int = 25):
         """Takes a student, represented as a dictionary and an elasticsearch-py client and returns an elastic response
@@ -42,7 +44,7 @@ class ScoreEvaluator(object):
         See above student class for schema
         """
 
-        s = elasticsearch_dsl.Search(using=client, index="mentors_index").extra(
+        s = elasticsearch_dsl.Search(using=client, index=self.index).extra(
             explain=True
         )
 
@@ -50,10 +52,10 @@ class ScoreEvaluator(object):
         s = s.filter("term", track=student["track"])
 
         # And also by requireExtended
-        if student["requireExtended"]:
+        if student.get("requireExtended"):
             s = s.filter("term", okExtended="true")
 
-        if not student["underrepresented"]:
+        if not student.get("underrepresented"):
             s = s.exclude("term", preferStudentUnderRep=2)
 
         # Adds one to all remaining entries in order to be sure that, in the worst case,

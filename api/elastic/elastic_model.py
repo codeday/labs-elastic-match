@@ -2,6 +2,8 @@
 Houses the schema for the Elastic Database/
 """
 
+from os import getenv
+
 from elasticsearch_dsl import (
     Document,
     Text,
@@ -12,8 +14,9 @@ from elasticsearch_dsl import (
     Nested,
     Join,
     Integer,
-    Object
+    Object,
 )
+from elasticsearch import ConnectionPool
 
 
 class StudentVote(InnerDoc):
@@ -40,7 +43,7 @@ class MentorProject(Document):
     track = Keyword(required=True)
 
     class Index:
-        name = "mentors_index"
+        name = getenv("MENTOR_INDEX_NAME", "mentor_index")
         settings = {
             "number_of_shards": 1,
             "number_of_replicas": 0,
@@ -51,9 +54,9 @@ class MentorProject(Document):
         return super().save(**kwargs)
 
 
-
 class StudentSchema(Document):
     """Ignored by elastic, is here for my refrence, may be implemented later"""
+
     id = Keyword(required=True)
     name = Keyword(required=True)
     rural = Boolean(required=True)
@@ -64,10 +67,23 @@ class StudentSchema(Document):
     interestTags = Keyword(multi=True, required=True)
 
 
-if __name__ == "__main__":
+def make_db(host="10.0.3.33:9200"):
     from elasticsearch_dsl import connections
 
-    connections.create_connection(hosts=["10.0.3.33:9200"], timeout=20)
+    connections.create_connection(hosts=[host], timeout=20)
 
     index_template = MentorProject._index.as_template("base")
     index_template.save()
+
+
+def del_db(host="10.0.3.33:9200"):
+    from elasticsearch_dsl import connections
+
+    connections.create_connection(hosts=[host], timeout=20)
+
+    something = MentorProject._index.delete()
+
+
+if __name__ == "__main__":
+    # del_db("mentor_index")
+    make_db("10.0.3.33:9201")

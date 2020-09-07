@@ -6,33 +6,12 @@ from elasticsearch_dsl import UpdateByQuery, Search
 from elasticsearch import RequestError
 
 
-def unwrap_student_data(project_data_dict: dict) -> dict:
-    unwrapped_dict = {}
-    intermediate_list = []
-    list_students = set([])
-    for proj_id, project in project_data_dict.items():
-        for student in project["listStudentsSelected"]:
-            intermediate_list.append(
-                {student["student_id"]: {proj_id: student["choice"]}}
-            )
-            list_students.add(student["student_id"])
-    for student_id in list_students:
-        unwrapped_dict[student_id] = {}
-        for proj_data in intermediate_list:
-            if list(proj_data.keys())[0] == student_id:
-                unwrapped_dict[student_id][
-                    list(proj_data[student_id].items())[0][0]
-                ] = list(proj_data[student_id].items())[0][1]
-
-    return unwrapped_dict
-
-
 def mentor_matches(mentor_data):
     """
     Gives a list of students who voted for a mentor.
     TODO: Look into potential issue with ID being project not mentor level
     :param mentor_data: {
-        "id": str(uuid.uuid4())
+        "id": str(uuid.uuid4())  # This is the project, not the mentor, ID
     }
     """
 
@@ -41,14 +20,15 @@ def mentor_matches(mentor_data):
     except exceptions.DecodeError:
         raise Unauthorized("Something is wrong with your JWT Encoding.")
     ela_resp = (
-        Search(using=current_app.elasticsearch, index="mentors_index")
+        Search(using=current_app.elasticsearch, index="mentor_index")
         .query("term", id=data["id"])
         .execute()
         .to_dict()
     )["hits"]["hits"][0]["_source"]
+    print("test")
     resp = {
         "project_id": ela_resp["id"],
-        "students": unwrap_student_data(ela_resp["listMentorSelected"]),
+        "students": ela_resp["listStudentsSelected"],
     }
 
     return json.dumps(resp)
@@ -74,7 +54,7 @@ def save_mentor_choices(choice_data):
         raise Unauthorized("Something is wrong with your JWT Encoding.")
 
     ubq_data = (
-        UpdateByQuery(using=current_app.elasticsearch, index="mentors_index")
+        UpdateByQuery(using=current_app.elasticsearch, index="mentor_index")
         .query("term", id=data["proj_id"])
         .script(
             source="ctx._source.listMentorSelected = newValue",
@@ -103,7 +83,7 @@ def retrieve_mentor_votes(project_id):
     except exceptions.DecodeError:
         raise Unauthorized("Something is wrong with your JWT Encoding.")
     ela_resp = (
-        Search(using=current_app.elasticsearch, index="mentors_index")
+        Search(using=current_app.elasticsearch, index="mentor_index")
         .query("term", id=data["id"])
         .execute()
         .to_dict()

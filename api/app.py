@@ -13,10 +13,12 @@ parentdir = os.path.dirname(currentdir)
 sys.path.insert(0, parentdir)
 
 elastic_host = os.getenv("ELASTICSEARCH_URL")
+elastic_index = os.getenv("ELASTICSEARCH_INDEX", None)
 
 app = Flask(__name__)
 app.elasticsearch = Elasticsearch(elastic_host)
-app.scorer = ScoreEvaluator()
+print(elastic_host)
+app.scorer = ScoreEvaluator(index=elastic_index)
 app.jwt_key = os.getenv("JWT_KEY")
 
 import student
@@ -29,5 +31,11 @@ app.add_url_rule("/mentor/matches/<mentor_data>", methods=["GET"], view_func=men
 app.add_url_rule("/mentor/votes/<mentor_data>", methods=["PUT"], view_func=mentor.save_mentor_choices)
 app.add_url_rule("/mentor/votes/<mentor_data>", methods=["GET"], view_func=mentor.retrieve_mentor_votes)
 
+
+@app.route("/", methods=["GET"])
+def main():
+    return "Welcome to the ElasticMatch Webserver! There isn't anything useful here, go look around and find some other things!"
+
+
 if __name__ == "__main__":
-    app.run(host="0.0.0.0", port=9900, debug=True)
+    app.run(host="localhost", port=9900, debug=True)
