@@ -41,7 +41,7 @@ class MentorTests(TestCase):
     def generate_student_votes_for_mentor(self, project_id: str, jwt_token: str):
         student_ids = ["rec6dPGkGcMtnYg02", "rec6kY5xQMKwbXBhd", "rec2i5KOFI1a144dR",
                        "rec288k49LFCx0hBg", "rec1nMv1Zul3JRCoU"]
-        shuffle(student_ids)
+        # shuffle(student_ids)
         for student_id in student_ids:
             choice_data = encode(
                 {
@@ -69,43 +69,45 @@ class MentorTests(TestCase):
                 self.jwt_token,
             )
 
-            # time.sleep(1)
-
             response = mentor_matches(mentor_data.decode("ascii"))
             self.assertIsNotNone(response)
             num_resp = len(loads(response)["students"])
             self.assertEqual(5, num_resp,
                              "The wrong number of students were matched with the mentor")
+            return response
 
-    # def test_student_votes(self):
-    #     with self.env:
-    #         choice_data = encode(
-    #             {
-    #                 "student_id": "rec03s7tmgmxVlDZu",
-    #                 "votes": [
-    #                     {"proj_id": "reczqDxIOXArZyOpx", "choice": 1},
-    #                     {"proj_id": "recyVWYD3hUaEr5KO", "choice": 2},
-    #                     {"proj_id": "recOeuRebe0SFd4Sw", "choice": 3},
-    #                     {"proj_id": "recAmfKOaD2aXtpnB", "choice": 4},
-    #                     {"proj_id": "recFtnrM4ZyO7lYBG", "choice": 5},
-    #                 ]
-    #             },
-    #             self.jwt_token,
-    #         )
-    #
-    #         response = save_student_choices(choice_data.decode('ascii'))
-    #         self.assertIsNotNone(response, 200)
-    #         self.assertEqual(loads(response)["updated"], 5, "Wrong number of student votes added")
-    #
-    #         time.sleep(0.5)
-    #
-    #         student_id = encode(
-    #             {
-    #                 "student_id": "rec03s7tmgmxVlDZu"
-    #             },
-    #             self.jwt_token,
-    #         )
-    #
-    #         response = retrieve_student_votes(student_id.decode('ascii'))
-    #         self.assertIsNotNone(response, 200)
-    #         print(response)
+    def test_save_mentor_matches(self):
+        with self.env:
+            student_votes = loads(self.test_get_mentor_matches())
+            student_votes["proj_id"] = student_votes.pop("project_id")
+            student_votes["votes"] = student_votes.pop("students")
+
+            student_votes = encode(
+                student_votes,
+                self.jwt_token,
+            )
+
+            resp = save_mentor_choices(student_votes)
+            self.assertEqual(resp, '{"ok": true}')
+
+    def test_retrieve_mentor_votes(self):
+        with self.env:
+            self.test_save_mentor_matches()
+
+            time.sleep(1)
+
+            mentor_data = encode(
+                {
+                    "id": "recAmfKOaD2aXtpnB"
+                },
+                self.jwt_token,
+            )
+            resp = loads(retrieve_mentor_votes(mentor_data))
+            self.assertEqual(len(resp['mentor_votes']), 5)
+            self.assertEqual(resp['mentor_votes'][0], 'rec6dPGkGcMtnYg02')
+            self.assertEqual(resp['mentor_votes'][1], 'rec6kY5xQMKwbXBhd')
+            self.assertEqual(resp['mentor_votes'][2], 'rec2i5KOFI1a144dR')
+            self.assertEqual(resp['mentor_votes'][3], 'rec288k49LFCx0hBg')
+            self.assertEqual(resp['mentor_votes'][4], 'rec1nMv1Zul3JRCoU')
+
+            print(resp)

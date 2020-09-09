@@ -25,7 +25,6 @@ def mentor_matches(mentor_data):
         .execute()
         .to_dict()
     )["hits"]["hits"][0]["_source"]
-    print("test")
     resp = {
         "project_id": ela_resp["id"],
         "students": ela_resp["listStudentsSelected"],
@@ -57,9 +56,9 @@ def save_mentor_choices(choice_data):
         UpdateByQuery(using=current_app.elasticsearch, index="mentor_index")
         .query("term", id=data["proj_id"])
         .script(
-            source="ctx._source.listMentorSelected = newValue",
+            source="ctx._source.listMentorSelected = params.students;",
             params={
-                "student": {"newValue": [vote["student_id"] for vote in data["votes"]]}
+                "students": [vote["student_id"] for vote in data["votes"]]
             },
         )
     )

@@ -67,7 +67,7 @@ class FlaskTests(TestCase):
             response: Response = self.client.get(
                 f"/student/matches/{student_data.decode('ascii')}"
             )
-            self.assertEqual(response.status_code, 200, "Student matches page did not respond")
+            self.assert200(response, "Student matches page did not respond")
             self.assertGreater(len(response.get_data()), 2, "Student matches page did not respond with enough "
                                                             "content, something probably failed")
 
@@ -88,12 +88,9 @@ class FlaskTests(TestCase):
             )
 
             response = self.client.put(f"/student/votes/{choice_data.decode('ascii')}")
-            self.assertEqual(response.status_code, 200, "Student vote PUT failed")
+            self.assert200(response, "Student vote PUT failed")
             self.assertEqual(loads(response.get_data().decode('ascii'))["updated"], 5,
                              "Wrong number of student votes added")
-
-            print("Moving on to second half")
-            time.sleep(0.5)
 
             student_id = encode(
                 {
@@ -103,8 +100,7 @@ class FlaskTests(TestCase):
             )
 
             response = self.client.get(f"/student/votes/{student_id.decode('ascii')}")
-            self.assertEqual(response.status_code, 200, "Student vote GET failed")
-            print(response.get_data().decode('ascii'))
+            self.assert200(response, "Student vote GET failed")
 
 # TODO: Add tests for the mentor cases
 

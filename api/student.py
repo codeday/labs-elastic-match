@@ -58,26 +58,32 @@ def save_student_choices(choice_data):
         raise Unauthorized("Something is wrong with your JWT Encoding.")
     resps = []
     for vote in data["votes"]:
-        s_res = Search(using=current_app.elasticsearch, index="mentor_index").query("term", id=vote["proj_id"]).execute()
+        s_res = (
+            Search(using=current_app.elasticsearch, index="mentor_index")
+            .query("term", id=vote["proj_id"])
+            .execute()
+        )
 
-        u_res = current_app.elasticsearch.update(index="mentor_index", id=s_res["hits"]["hits"][0]["_id"],
-                                                 body={
-                                                     "script": {
-                                                         "source":
-                                                             '''if(!ctx._source.containsKey("listStudentsSelected")){ 
-                                                                    ctx._source.listStudentsSelected = new ArrayList();
-                                                                } 
-                                                                ctx._source.listStudentsSelected.add(params.student);
-                                                                ctx._source.numStudentsSelected++;''',
-                                                         "params": {
-                                                             "student": {
-                                                                 "student_id": data["student_id"],
-                                                                 "choice": vote["choice"],
-                                                             }
-                                                         }
-                                                     }
-                                                 },
-                                                 refresh="true")
+        u_res = current_app.elasticsearch.update(
+            index="mentor_index",
+            id=s_res["hits"]["hits"][0]["_id"],
+            body={
+                "script": {
+                    "source": """if(!ctx._source.containsKey("listStudentsSelected")){ 
+                                     ctx._source.listStudentsSelected = new ArrayList();
+                                 } 
+                                 ctx._source.listStudentsSelected.add(params.student);
+                                 ctx._source.numStudentsSelected++;""",
+                    "params": {
+                        "student": {
+                            "student_id": data["student_id"],
+                            "choice": vote["choice"],
+                        }
+                    },
+                }
+            },
+            refresh="true",
+        )
 
         try:
             resps.append(u_res)
