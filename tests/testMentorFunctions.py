@@ -69,7 +69,7 @@ class MentorTests(TestCase):
                 self.jwt_token,
             )
 
-            time.sleep(0.8)
+            # time.sleep(1)
 
             response = mentor_matches(mentor_data.decode("ascii"))
             self.assertIsNotNone(response)

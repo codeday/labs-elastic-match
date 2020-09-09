@@ -2,7 +2,7 @@ from jwt import decode, exceptions
 from werkzeug.exceptions import InternalServerError, Unauthorized
 from flask import current_app
 import json
-from elasticsearch_dsl import UpdateByQuery
+from elasticsearch_dsl import UpdateByQuery, Search
 from elasticsearch import RequestError
 from elasticsearch.exceptions import ConflictError
 import time
@@ -58,33 +58,35 @@ def save_student_choices(choice_data):
         raise Unauthorized("Something is wrong with your JWT Encoding.")
     resps = []
     for vote in data["votes"]:
-        while True:
-            ubq_data = (
-                UpdateByQuery(using=current_app.elasticsearch, index="mentor_index")
-                .params(refresh="wait_for")
-                .query("term", id=vote["proj_id"])
-                .script(
-                    source='if(!ctx._source.containsKey("listStudentsSelected")){ ctx._source.listStudentsSelected = new ArrayList();} ctx._source.listStudentsSelected.add(params.student);ctx._source.numStudentsSelected++;',
-                    params={
-                        "student": {
-                            "student_id": data["student_id"],
-                            "choice": vote["choice"],
-                        }
-                    },
-                )
-            )
-            try:
-                resps.append(ubq_data.execute().to_dict())
-                time.sleep(0.1)
-                break
-            except RequestError as e:
-                raise InternalServerError(
-                    "Something went wrong with the update, please try again."
-                )
-            except ConflictError:
-                continue
+        s_res = Search(using=current_app.elasticsearch, index="mentor_index").query("term", id=vote["proj_id"]).execute()
 
-    num_updated = sum([resp["updated"] for resp in resps])
+        u_res = current_app.elasticsearch.update(index="mentor_index", id=s_res["hits"]["hits"][0]["_id"],
+                                                 body={
+                                                     "script": {
+                                                         "source":
+                                                             '''if(!ctx._source.containsKey("listStudentsSelected")){ 
+                                                                    ctx._source.listStudentsSelected = new ArrayList();
+                                                                } 
+                                                                ctx._source.listStudentsSelected.add(params.student);
+                                                                ctx._source.numStudentsSelected++;''',
+                                                         "params": {
+                                                             "student": {
+                                                                 "student_id": data["student_id"],
+                                                                 "choice": vote["choice"],
+                                                             }
+                                                         }
+                                                     }
+                                                 },
+                                                 refresh="true")
+
+        try:
+            resps.append(u_res)
+        except RequestError as e:
+            raise InternalServerError(
+                "Something went wrong with the update, please try again."
+            )
+
+    num_updated = sum([1 for resp in resps if resp["result"] == "updated"])
     return json.dumps({"ok": True, "updated": num_updated})
 
 
