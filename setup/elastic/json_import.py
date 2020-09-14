@@ -15,6 +15,7 @@ def load_file_to_index(host="10.0.3.33:9200"):
     with open(mentors_json, "r", encoding="utf-8") as project_json_file:
         project_json = load(project_json_file, encoding="utf-8")
 
+        # TODO: change this to a bulk query and force refresh to be true
         errors = []
         for project in project_json:
             try:

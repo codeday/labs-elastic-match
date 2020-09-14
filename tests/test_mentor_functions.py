@@ -32,7 +32,7 @@ class MentorTests(TestCase):
         with self.env:
             make_db(host=self.host)
             load_file_to_index(host=self.host)
-            time.sleep(0.5)
+            time.sleep(0.2)
 
     def tearDown(self) -> None:
         with self.env:
@@ -109,5 +109,3 @@ class MentorTests(TestCase):
             self.assertEqual(resp['mentor_votes'][2], 'rec2i5KOFI1a144dR')
             self.assertEqual(resp['mentor_votes'][3], 'rec288k49LFCx0hBg')
             self.assertEqual(resp['mentor_votes'][4], 'rec1nMv1Zul3JRCoU')
-
-            print(resp)

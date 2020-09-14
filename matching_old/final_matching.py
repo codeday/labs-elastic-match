@@ -1,6 +1,6 @@
 """Build the combined data dictionary and the student placement dictionary"""
 import json
-from matching.helpers import *
+from matching_old.helpers import *
 from copy import deepcopy
 
 project_docs = open("../../final_match/mentor_index_dump_2", "r", encoding="utf-8")

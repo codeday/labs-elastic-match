@@ -6,7 +6,6 @@ from api import app
 import os
 import time
 from jwt import encode
-import requests
 from flask_testing import TestCase
 from flask.wrappers import Response
 from json import loads
