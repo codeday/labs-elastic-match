@@ -30,6 +30,7 @@ def find_lost_student_ids(starting_students_list: list, project_data_dict: dict,
 
 
 def unwrap_student_data(project_data_dict: dict) -> dict:
+    """"""
     unwrapped_dict = {}
     intermediate_list = []
     list_students = set([])

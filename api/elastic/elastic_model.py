@@ -33,7 +33,7 @@ class MentorProject(Document):
     preferToolExistingKnowledge = Boolean(required=True)
     okExtended = Boolean(required=True)
     okTimezoneDifference = Boolean(required=True)
-    timezone = Integer(required=True)  # +- UTC
+    timezone = Integer(required=True)  # ± UTC
     id = Keyword(required=True)
     proj_description = Text(required=True)
     proj_tags = Keyword(multi=True)
@@ -51,11 +51,11 @@ class MentorProject(Document):
 
     def save(self, **kwargs):
         self.numStudentsSelected = 0
-        return super().save(**kwargs)
+        return super().save(skip_empty=False, **kwargs)
 
 
 class StudentSchema(Document):
-    """Ignored by elastic, is here for my refrence, may be implemented later"""
+    """Ignored by elastic, is here for my reference, may be implemented later"""
 
     id = Keyword(required=True)
     name = Keyword(required=True)

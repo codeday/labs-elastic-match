@@ -3,8 +3,10 @@ Loads the mentors into Elastic database from a JSON file.
 """
 
 from json import load
-from elasticsearch_dsl import connections
+from elasticsearch_dsl import connections, Search
 from elastic.elastic_model import MentorProject
+from elasticsearch import Elasticsearch
+from elasticsearch.helpers import bulk
 import os
 
 
@@ -40,11 +42,43 @@ def load_file_to_index(host="10.0.3.33:9200"):
             except Exception as ex:
                 errors.append(project["name"])
 
-    if len(errors) == 0:
-        print("🥳🎉🥳 All mentors loaded! 🥳🎉🥳")
-    else:
+    if len(errors) != 0:
         print(errors)
 
 
-if __name__ == '__main__':
+def generate_student_votes(host="10.0.3.33:9200"):
+    """Loads student votes, in the format generated in prep_student_data.py, into the database. """
+    client = Elasticsearch(host)
+
+    all_projects = (
+        Search(using=client, index="mentor_index")
+        .params(size=10000)
+        .query()
+        .execute()
+        .to_dict()
+    )["hits"]["hits"]
+
+    updates = []
+    ids = []
+    with open("testing_student_votes.json") as student_votes_file:
+        student_votes = load(student_votes_file)
+
+    for project in all_projects:
+        ids.append(project["_source"]["id"])
+        update = {
+            "_op_type": "update",
+            "_index": "mentor_index",
+            "_id": project["_id"],
+            "doc": {
+                "listStudentsSelected": {"student_id": "dfsfdsfsdfs", "choice": 1,}
+            },
+        }
+        updates.append(update)
+    print(ids)
+
+    bulk(client=client, actions=updates)
+
+
+if __name__ == "__main__":
     load_file_to_index(host="10.0.3.33:9201")
+    generate_student_votes(host="10.0.3.33:9201")
