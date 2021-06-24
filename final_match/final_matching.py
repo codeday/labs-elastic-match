@@ -178,11 +178,16 @@ with open("warnings.txt", "w") as warnings:
             } for s in data["students"]]
 
             if (len(students) <= data["proj_capacity"]/3):
-                warnings.write(f"- project {project_shortname} has {len(students)}/{data['proj_capacity']} students\n")
+                warnings.write(f"! PROJECT {project_shortname} has {len(students)}/{data['proj_capacity']} students. Options:\n")
+                warnings.writelines([
+                    f"  - {students_username[s_opt['student_id']]} ({s_opt['choice']})\n"
+                    for s_opt in projects_reshaped[project]["listStudentsSelected"]
+                    if not s_opt['student_id'] in data["students"]
+                ])
 
             for student in students:
                 if (student["choice"] > 3):
-                    warnings.write(f"- student {student['shortname']} got choice {student['choice']}\n")
+                    warnings.write(f"? STUDENT {student['shortname']} got choice {student['choice']}\n")
 
             writer.writerow([
                 f"{project_shortname}({len(students)}/{data['proj_capacity']})",
