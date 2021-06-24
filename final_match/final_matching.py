@@ -1,18 +1,62 @@
 """Build the combined data dictionary and the student placement dictionary"""
 import json
-from final_match.helpers import *
+import os
+from helpers import *
 from copy import deepcopy
+import requests
+import itertools
+import csv
 
-project_docs = open("./mentor_index_dump_2", "r", encoding="utf-8")
-project_size_data = json.load(open("./mentors_size_data.json", "r", encoding="utf-8"))
-project_size_dict = {project["proj_id"]: project["proj_size_remaining"] for project in project_size_data}
+"""Fetch the project size data"""
+project_size_data_query = """
+query {
+    labs {
+        mentors(where: {inStatus: ACCEPTED}) {
+            projects {
+                status
+                id
+                maxStudents
+            }
+        }
+    }
+}
+"""
+resp =  requests.post(
+    "https://graph.codeday.org/",
+    json={ "query": project_size_data_query },
+    headers={ "X-Labs-Authorization": f"Bearer {os.getenv('TOKEN')}" },
+).json()
+projects = list(itertools.chain(*(m["projects"] for m in resp["data"]["labs"]["mentors"])))
+accepted_projects = list((p for p in projects if p["status"] == "ACCEPTED"))
+print(f"Found {len(accepted_projects)} available projects")
+project_size_dict = {p["id"]: p["maxStudents"] for p in accepted_projects}
+
+def get_id_for_csv_entry(entry):
+    return entry.split('-')[-1]
+
+projects_reshaped = {}
+students_username = {}
+projects_shortname = {}
+
+with open("./prefs.csv", "r", encoding="utf-8") as student_prefs:
+    reader = csv.reader(student_prefs)
+    for row in reader:
+        if (row[0] == "student"):
+            continue
+        student = get_id_for_csv_entry(row[0])
+        students_username[student] = row[0]
+        for ind, choice in enumerate(row[1:]):
+            project_id = get_id_for_csv_entry(choice)
+            projects_shortname[project_id] = choice
+            if not project_id in projects_reshaped:
+                projects_reshaped[project_id] = {"listStudentsSelected": [], "id": project_id}
+            projects_reshaped[project_id]["listStudentsSelected"].append({ "choice": ind + 1, "student_id": student })
+
+project_docs = projects_reshaped.values()
 
 all_project_data = {}
 student_placements = {}
-for line in project_docs:
-    project_doc = json.loads(line)
-    if project_doc["id"] == 'recRJGXhTr9lEq1tO':
-        continue
+for project_doc in project_docs:
     id_ = project_doc["id"]
     proj_size = project_size_dict[id_]
     if proj_size == 0:
@@ -25,7 +69,6 @@ for line in project_docs:
     student_placements[id_] = {"students": [], "proj_capacity": project_size_dict[id_]}
 
 unwrapped_student_data = unwrap_student_data(all_project_data)
-print(unwrapped_student_data)
 
 starting_students = []
 for i in [[student["student_id"] for student in project["listStudentsSelected"]] for k, project in
@@ -121,5 +164,27 @@ print("Students left over:" + str(count))
 student_placement_file = open("./student_placement.json", "w")
 json.dump(student_placements, student_placement_file)
 
+def get_student_choice(student_id, project_id):
+    return [s["choice"] for s in projects_reshaped[project_id]["listStudentsSelected"] if s["student_id"] == student_id][0]
 
-print("lol")
+with open("warnings.txt", "w") as warnings:
+    with open("student_placement.csv", "w") as student_placement_csv:
+        writer = csv.writer(student_placement_csv)
+        for project, data in student_placements.items():
+            project_shortname = projects_shortname[project]
+            students = [{
+                "shortname": students_username[s],
+                "choice": get_student_choice(s, project),
+            } for s in data["students"]]
+
+            if (len(students) <= data["proj_capacity"]/3):
+                warnings.write(f"- project {project_shortname} has {len(students)}/{data['proj_capacity']} students\n")
+
+            for student in students:
+                if (student["choice"] > 3):
+                    warnings.write(f"- student {student['shortname']} got choice {student['choice']}\n")
+
+            writer.writerow([
+                f"{project_shortname}({len(students)}/{data['proj_capacity']})",
+                *list([f"({s['choice']}){s['shortname']}" for s in students])
+            ])
