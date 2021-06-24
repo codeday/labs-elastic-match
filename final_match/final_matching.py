@@ -167,6 +167,11 @@ json.dump(student_placements, student_placement_file)
 def get_student_choice(student_id, project_id):
     return [s["choice"] for s in projects_reshaped[project_id]["listStudentsSelected"] if s["student_id"] == student_id][0]
 
+def get_student_project(student_id):
+    for proj, data in student_placements.items():
+        if (student_id in data["students"]):
+            return proj
+
 with open("warnings.txt", "w") as warnings:
     with open("student_placement.csv", "w") as student_placement_csv:
         writer = csv.writer(student_placement_csv)
@@ -180,7 +185,7 @@ with open("warnings.txt", "w") as warnings:
             if (len(students) <= data["proj_capacity"]/3):
                 warnings.write(f"! PROJECT {project_shortname} has {len(students)}/{data['proj_capacity']} students. Options:\n")
                 warnings.writelines([
-                    f"  - {students_username[s_opt['student_id']]} ({s_opt['choice']})\n"
+                    f"  - {students_username[s_opt['student_id']]} (pref {s_opt['choice']}, cur count {len(student_placements[get_student_project(s_opt['student_id'])]['students'])})\n"
                     for s_opt in projects_reshaped[project]["listStudentsSelected"]
                     if not s_opt['student_id'] in data["students"]
                 ])
